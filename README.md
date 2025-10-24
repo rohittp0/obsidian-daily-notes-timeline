@@ -1,194 +1,323 @@
 # Daily Notes Viewer for Obsidian
 
-A powerful Obsidian plugin that displays all your daily notes in a single, unified view with inline editing capabilities. Perfect for reviewing your journal entries, tracking progress, and managing your daily notes efficiently.
+A powerful Obsidian plugin that displays all your daily notes in a single, unified view with always-on editing, vim mode support, and keyboard navigation. Perfect for reviewing your journal entries, tracking progress, and managing your daily notes efficiently.
 
 ## Features
 
+### Core Features
 - **Unified View**: See all your daily notes in one place, sorted by date
-- **Inline Editing**: Edit any daily note directly from the viewer with a built-in textarea editor
-- **Auto-Open on Startup**: Automatically opens the viewer when Obsidian starts (configurable)
-- **Quick Navigation**: Click on any date to open that note in the editor
-- **Refresh on Demand**: Refresh button to reload your daily notes list
-- **Customizable Settings**: Configure folder location, sort order, and startup behavior
+- **Always-On Editing**: All notes are editable by default - just start typing
+- **Auto-Save**: Changes are automatically saved while you type (configurable delay)
+- **Keyboard Navigation**: Navigate between notes using arrow keys (or j/k in vim mode)
+- **Vim Mode**: Optional vim-style editing with command and insert modes
+- **Auto-Open on Startup**: Automatically opens the viewer when Obsidian starts
+- **Customizable**: Extensive settings for folder location, sort order, navigation, and more
+
+### Interface
 - **Clean UI**: Beautiful, responsive interface that adapts to your Obsidian theme
-- **Multiple Access Points**: Access via ribbon icon, command palette, or automatically on startup
+- **Visual Indicators**: Save status and vim mode indicators for each note
+- **Quick Actions**: Open notes in new tabs with a single click
+- **Date Navigation**: Click on dates to open notes in the editor
+- **Auto-Resizing**: Textareas automatically adjust to content size
 
 ## Installation
+
+### From Obsidian Community Plugins (Recommended)
+
+1. Open Obsidian Settings
+2. Go to **Community Plugins** and disable Safe Mode (if needed)
+3. Click **Browse** and search for "Daily Notes Viewer"
+4. Click **Install**, then **Enable**
+
+### Manual Installation
+
+1. Download the latest release from the [releases page](https://github.com/yourusername/obsidian-daily-notes-viewer/releases)
+2. Extract `main.js`, `styles.css`, and `manifest.json` to:
+   ```
+   <vault>/.obsidian/plugins/daily-notes-viewer/
+   ```
+3. Reload Obsidian
+4. Enable the plugin in Settings → Community Plugins
 
 ### For Development
 
 1. Clone this repository to your vault's plugins folder:
    ```bash
    cd /path/to/your/vault/.obsidian/plugins
-   git clone <this-repo-url> daily-notes-viewer
-   ```
-
-2. Install dependencies:
-   ```bash
+   git clone https://github.com/yourusername/obsidian-daily-notes-viewer daily-notes-viewer
    cd daily-notes-viewer
    npm install
+   npm run dev
    ```
 
-3. Build the plugin:
-   ```bash
-   npm run build
-   ```
-
-4. Enable the plugin in Obsidian settings under Community Plugins
-
-### For Production Use
-
-1. Download the latest release from the releases page
-2. Extract the files to your vault's plugin folder: `<vault>/.obsidian/plugins/daily-notes-viewer/`
-3. Reload Obsidian
-4. Enable the plugin in Settings → Community Plugins
+2. The plugin will automatically build and copy files to your vault
+3. Reload Obsidian to see changes
 
 ## Usage
 
 ### Opening the Daily Notes Viewer
 
-There are three ways to open the viewer:
+Access the viewer in multiple ways:
 
 1. **Ribbon Icon**: Click the calendar icon in the left sidebar
-2. **Command Palette**: Press `Cmd/Ctrl + P` and search for "Open Daily Notes Viewer"
-3. **Auto-open**: The viewer will open automatically on startup (if enabled in settings)
-
-### Viewing Notes
-
-- All daily notes are displayed in a scrollable list, sorted by date
-- Each note shows its date as a clickable link
-- The markdown content is rendered with full formatting
-- Empty notes are indicated with "(Empty note)"
+2. **Command Palette**: `Cmd/Ctrl + P` → "Open Daily Notes Viewer"
+3. **Auto-open**: Opens automatically on startup (if enabled in settings)
 
 ### Editing Notes
 
-1. Click the **Edit** button on any note
-2. Make your changes in the textarea editor
-3. Click **Save** to save changes or **Cancel** to discard
+All notes are **always editable** - no buttons needed:
+
+1. Click in any note to start editing
+2. Changes auto-save after 2 seconds (default, configurable)
+3. Watch the status indicator: `●` (typing) → `✓` (saved)
+
+### Keyboard Navigation
+
+**Without Vim Mode**:
+- `↑` at cursor start → Move to previous note
+- `↓` at cursor end → Move to next note
+- Can be disabled in settings
+
+**With Vim Mode Enabled**:
+
+**Command Mode (NORMAL)**:
+- `j` / `k` - Navigate between notes (no cursor position check)
+- `↑` / `↓` - Navigate between notes
+- `i` - Enter insert mode at cursor
+- `I` - Enter insert mode at line start
+- `a` - Enter insert mode after cursor
+- `A` - Enter insert mode at line end
+- `o` - Open new line below and enter insert mode
+- `O` - Open new line above and enter insert mode
+
+**Insert Mode (INSERT)**:
+- All keys work normally for text editing
+- `Esc` - Return to command mode
+- No navigation (j/k type normally)
 
 ### Quick Actions
 
-- **Open**: Opens the note in a new tab
-- **Date Link**: Click the date to open the note in the current pane
-- **Refresh**: Reload the list of daily notes
+- **Date Link**: Click to open note in new tab
+- **Open Button**: Opens note in new tab
+- **Refresh Button**: Reload all daily notes
+- **Mode Indicator**: Shows NORMAL/INSERT when vim mode is active
+- **Save Indicator**: Shows save status (●/✓)
 
 ### Commands
 
 - **Open Daily Notes Viewer**: Opens or reveals the viewer
-- **Refresh Daily Notes Viewer**: Refreshes the notes list in an open viewer
+- **Refresh Daily Notes Viewer**: Refreshes the notes list
 
 ## Settings
 
-Access settings via Settings → Plugin Options → Daily Notes Viewer
+Access via **Settings → Daily Notes Viewer**
 
-### Available Settings
+### File Settings
 
-- **Daily notes folder**: Specify the folder where your daily notes are stored
-  - Leave empty to search in the root folder
-  - Example: `Daily Notes` or `Journal/Daily`
+**Daily notes folder**
+- Folder where your daily notes are stored
+- Leave empty to search in root folder
+- Example: `Daily Notes` or `Journal/Daily`
 
-- **Date format**: Currently supports YYYY-MM-DD format (e.g., 2025-10-24)
-  - This setting is informational only
-  - Notes must use YYYY-MM-DD format to be detected
+**Date format**
+- Currently supports YYYY-MM-DD format only
+- Files must be named like `2025-10-24.md`
 
-- **Open on startup**: Toggle automatic opening when Obsidian starts
+**Sort order**
+- `Newest first`: Most recent notes at the top
+- `Oldest first`: Oldest notes at the top
 
-- **Sort order**: Choose how to sort your daily notes
-  - Newest first: Shows most recent notes at the top
-  - Oldest first: Shows oldest notes at the top
+### Behavior Settings
+
+**Open on startup**
+- Automatically open the viewer when Obsidian starts
+- Default: Enabled
+
+**Keyboard navigation**
+- Enable navigation between notes using arrow keys (and j/k in vim mode)
+- Default: Enabled
+- When disabled: All keys work normally (no navigation)
+
+**Vim mode**
+- Enable vim-style editing with command and insert modes
+- Default: Disabled
+- Includes mode indicators (NORMAL/INSERT)
+
+### Auto-Save Settings
+
+**Auto-save**
+- Automatically save notes while typing
+- Default: Enabled
+
+**Auto-save delay**
+- Delay in milliseconds before auto-saving
+- Default: 2000ms (2 seconds)
+- Lower values save more frequently
 
 ## Daily Notes Format
 
-The plugin automatically detects daily notes based on their filename format:
+The plugin detects daily notes by filename:
 
 - **Required format**: `YYYY-MM-DD.md`
-- **Examples**:
-  - `2025-10-24.md`
-  - `2024-12-31.md`
-  - `2023-01-01.md`
+- **Valid examples**:
+  - `2025-10-24.md` ✓
+  - `2024-12-31.md` ✓
+  - `2023-01-01.md` ✓
+- **Invalid examples**:
+  - `Oct 24, 2025.md` ✗
+  - `2025-10-24-notes.md` ✗
+  - `24-10-2025.md` ✗
 
-Notes with other naming patterns will not be displayed in the viewer.
+Notes with other naming patterns will not be displayed.
 
 ## Development
 
 ### Build Commands
 
-- `npm run dev`: Start development mode with watch
-- `npm run build`: Build for production
-- `npm run version`: Bump version and update manifest
+```bash
+npm run dev        # Start development with watch mode
+npm run build      # Build for production
+npm run version    # Bump version and update manifest
+```
 
 ### Project Structure
 
 ```
 daily-notes-viewer/
 ├── src/
-│   └── main.ts          # Main plugin code
-├── styles.css           # Plugin styles
-├── manifest.json        # Plugin manifest
-├── package.json         # NPM dependencies
-└── README.md           # Documentation
+│   ├── main.ts                    # Plugin entry point
+│   ├── types.ts                   # Type definitions & constants
+│   ├── settings/
+│   │   └── settingsTab.ts         # Settings UI
+│   └── view/
+│       ├── dailyNotesView.ts      # Main view orchestrator
+│       ├── editorManager.ts       # Textarea & auto-save logic
+│       ├── fileManager.ts         # File loading & filtering
+│       ├── navigation.ts          # Keyboard navigation
+│       ├── renderer.ts            # UI rendering
+│       └── vimMode.ts             # Vim mode manager
+├── styles.css                     # Plugin styles
+├── manifest.json                  # Plugin manifest
+├── .github/workflows/release.yml  # Auto-release workflow
+└── README.md                      # This file
 ```
 
 ### Key Components
 
-- **DailyNotesView**: Custom ItemView that displays the daily notes
-- **DailyNotesViewerPlugin**: Main plugin class that manages the view lifecycle
-- **DailyNotesViewerSettingTab**: Settings interface for configuration
+- **DailyNotesView**: Main view orchestrator
+- **VimModeManager**: Handles vim mode states and transitions
+- **NavigationManager**: Keyboard navigation between notes
+- **EditorManager**: Textarea creation and auto-save
+- **FileManager**: File discovery and sorting
+- **Renderer**: UI rendering
+
+### Code Quality
+
+- TypeScript with strict typing
+- Modular architecture (8 focused files)
+- No file over 200 lines
+- Single responsibility principle
+- Clean separation of concerns
 
 ## Tips and Tricks
 
-1. **Fast Navigation**: Use the date links to quickly jump to a specific daily note
-2. **Bulk Review**: Scroll through all your daily notes to review your progress over time
-3. **Quick Edits**: Make small edits directly in the viewer without opening separate tabs
-4. **Pin the View**: Keep the viewer open in your sidebar for easy access
-5. **Keyboard Shortcut**: Assign a custom hotkey to "Open Daily Notes Viewer" in Obsidian's hotkey settings
+1. **Vim Mode**: Enable for efficient keyboard-based editing and navigation
+2. **Pin the View**: Open in main pane for a dedicated daily notes workspace
+3. **Custom Hotkey**: Assign a hotkey to "Open Daily Notes Viewer" for quick access
+4. **Disable Navigation**: Turn off keyboard navigation if you prefer standard text editing
+5. **Adjust Auto-Save**: Increase delay if you want fewer saves, decrease for more frequent saves
+6. **Refresh**: Use the refresh button after creating new daily notes
+7. **Sort Order**: Try different sort orders to find what works for your workflow
 
 ## Troubleshooting
 
 ### No daily notes showing up?
 
-- Ensure your daily notes follow the YYYY-MM-DD.md naming format
-- Check that the "Daily notes folder" setting points to the correct folder
-- Click the Refresh button to reload the notes list
+- Check filename format: Must be `YYYY-MM-DD.md`
+- Verify "Daily notes folder" setting points to correct location
+- Click Refresh button to reload
+- Check that files exist in your vault
+
+### Vim mode not working?
+
+- Ensure "Vim mode" is enabled in settings
+- Look for mode indicator (NORMAL/INSERT)
+- Press `Esc` to enter command mode
+- Press `i` to enter insert mode
+
+### Navigation not working?
+
+- Check "Keyboard navigation" is enabled in settings
+- In vim mode: Must be in command mode for j/k
+- Without vim mode: Cursor must be at start/end of note
+- Try arrow keys instead of j/k (when vim is off)
+
+### Auto-save not working?
+
+- Verify "Auto-save" is enabled in settings
+- Look for save indicator (● while typing, ✓ when saved)
+- Check auto-save delay setting
+- Ensure file permissions allow writing
 
 ### Plugin not opening on startup?
 
-- Verify that "Open on startup" is enabled in settings
-- Check that the plugin is enabled in Community Plugins
-- Try restarting Obsidian
-
-### Edit button not working?
-
-- Make sure you have write permissions for the note
-- Check that the file still exists in your vault
-- Try refreshing the viewer
-
-## Support
-
-If you encounter any issues or have feature requests, please:
-
-1. Check the existing issues on GitHub
-2. Create a new issue with detailed information about the problem
-3. Include your Obsidian version and plugin version
+- Verify "Open on startup" is enabled
+- Check plugin is enabled in Community Plugins
+- Restart Obsidian
+- Check for console errors (Cmd/Ctrl + Shift + I)
 
 ## Roadmap
 
 Potential future features:
 
+- ✓ Vim mode support
+- ✓ Keyboard navigation
+- ✓ Auto-save functionality
 - Support for custom date formats
-- Filtering options (by date range, tags, etc.)
-- Search functionality within daily notes
-- Export all daily notes to a single file
-- Statistics and analytics for daily notes
+- Date range filtering
+- Tag-based filtering
+- Search within daily notes
+- Bulk export functionality
+- Note statistics and analytics
+- Customizable vim keybindings
+
+## Contributing
+
+Contributions are welcome! Please:
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Test thoroughly
+5. Submit a pull request
+
+## Support
+
+If you encounter issues or have feature requests:
+
+1. Check existing [GitHub issues](https://github.com/yourusername/obsidian-daily-notes-viewer/issues)
+2. Create a new issue with:
+   - Obsidian version
+   - Plugin version
+   - Steps to reproduce
+   - Expected vs actual behavior
 
 ## License
 
-MIT License - see LICENSE file for details
+MIT License - see [LICENSE](LICENSE) file for details
 
 ## Credits
 
-Built with the Obsidian API. Thanks to the Obsidian team for creating an amazing platform!
+- Built with the [Obsidian API](https://github.com/obsidianmd/obsidian-api)
+- Inspired by the daily notes workflow
+- Thanks to the Obsidian community for feedback and support
 
 ---
 
 **Made with ❤️ for the Obsidian community**
+
+If you find this plugin helpful, consider:
+- ⭐ Starring the repository
+- 🐛 Reporting bugs
+- 💡 Suggesting features
+- 📝 Contributing code
