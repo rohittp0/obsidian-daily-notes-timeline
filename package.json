@@ -1,7 +1,7 @@
 {
-	"name": "obsidian-sample-plugin",
+	"name": "obsidian-daily-notes-viewer",
 	"version": "1.0.0",
-	"description": "This is a sample plugin for Obsidian (https://obsidian.md)",
+	"description": "View and edit all your daily notes in a single unified page",
 	"main": "main.js",
 	"scripts": {
 		"dev": "node esbuild.config.mjs",

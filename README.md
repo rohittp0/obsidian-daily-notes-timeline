@@ -1,94 +1,194 @@
-# Obsidian Sample Plugin
+# Daily Notes Viewer for Obsidian
 
-This is a sample plugin for Obsidian (https://obsidian.md).
+A powerful Obsidian plugin that displays all your daily notes in a single, unified view with inline editing capabilities. Perfect for reviewing your journal entries, tracking progress, and managing your daily notes efficiently.
 
-This project uses TypeScript to provide type checking and documentation.
-The repo depends on the latest plugin API (obsidian.d.ts) in TypeScript Definition format, which contains TSDoc comments describing what it does.
+## Features
 
-This sample plugin demonstrates some of the basic functionality the plugin API can do.
-- Adds a ribbon icon, which shows a Notice when clicked.
-- Adds a command "Open Sample Modal" which opens a Modal.
-- Adds a plugin setting tab to the settings page.
-- Registers a global click event and output 'click' to the console.
-- Registers a global interval which logs 'setInterval' to the console.
+- **Unified View**: See all your daily notes in one place, sorted by date
+- **Inline Editing**: Edit any daily note directly from the viewer with a built-in textarea editor
+- **Auto-Open on Startup**: Automatically opens the viewer when Obsidian starts (configurable)
+- **Quick Navigation**: Click on any date to open that note in the editor
+- **Refresh on Demand**: Refresh button to reload your daily notes list
+- **Customizable Settings**: Configure folder location, sort order, and startup behavior
+- **Clean UI**: Beautiful, responsive interface that adapts to your Obsidian theme
+- **Multiple Access Points**: Access via ribbon icon, command palette, or automatically on startup
 
-## First time developing plugins?
+## Installation
 
-Quick starting guide for new plugin devs:
+### For Development
 
-- Check if [someone already developed a plugin for what you want](https://obsidian.md/plugins)! There might be an existing plugin similar enough that you can partner up with.
-- Make a copy of this repo as a template with the "Use this template" button (login to GitHub if you don't see it).
-- Clone your repo to a local development folder. For convenience, you can place this folder in your `.obsidian/plugins/your-plugin-name` folder.
-- Install NodeJS, then run `npm i` in the command line under your repo folder.
-- Run `npm run dev` to compile your plugin from `main.ts` to `main.js`.
-- Make changes to `main.ts` (or create new `.ts` files). Those changes should be automatically compiled into `main.js`.
-- Reload Obsidian to load the new version of your plugin.
-- Enable plugin in settings window.
-- For updates to the Obsidian API run `npm update` in the command line under your repo folder.
+1. Clone this repository to your vault's plugins folder:
+   ```bash
+   cd /path/to/your/vault/.obsidian/plugins
+   git clone <this-repo-url> daily-notes-viewer
+   ```
 
-## Releasing new releases
+2. Install dependencies:
+   ```bash
+   cd daily-notes-viewer
+   npm install
+   ```
 
-- Update your `manifest.json` with your new version number, such as `1.0.1`, and the minimum Obsidian version required for your latest release.
-- Update your `versions.json` file with `"new-plugin-version": "minimum-obsidian-version"` so older versions of Obsidian can download an older version of your plugin that's compatible.
-- Create new GitHub release using your new version number as the "Tag version". Use the exact version number, don't include a prefix `v`. See here for an example: https://github.com/obsidianmd/obsidian-sample-plugin/releases
-- Upload the files `manifest.json`, `main.js`, `styles.css` as binary attachments. Note: The manifest.json file must be in two places, first the root path of your repository and also in the release.
-- Publish the release.
+3. Build the plugin:
+   ```bash
+   npm run build
+   ```
 
-> You can simplify the version bump process by running `npm version patch`, `npm version minor` or `npm version major` after updating `minAppVersion` manually in `manifest.json`.
-> The command will bump version in `manifest.json` and `package.json`, and add the entry for the new version to `versions.json`
+4. Enable the plugin in Obsidian settings under Community Plugins
 
-## Adding your plugin to the community plugin list
+### For Production Use
 
-- Check the [plugin guidelines](https://docs.obsidian.md/Plugins/Releasing/Plugin+guidelines).
-- Publish an initial version.
-- Make sure you have a `README.md` file in the root of your repo.
-- Make a pull request at https://github.com/obsidianmd/obsidian-releases to add your plugin.
+1. Download the latest release from the releases page
+2. Extract the files to your vault's plugin folder: `<vault>/.obsidian/plugins/daily-notes-viewer/`
+3. Reload Obsidian
+4. Enable the plugin in Settings → Community Plugins
 
-## How to use
+## Usage
 
-- Clone this repo.
-- Make sure your NodeJS is at least v16 (`node --version`).
-- `npm i` or `yarn` to install dependencies.
-- `npm run dev` to start compilation in watch mode.
+### Opening the Daily Notes Viewer
 
-## Manually installing the plugin
+There are three ways to open the viewer:
 
-- Copy over `main.js`, `styles.css`, `manifest.json` to your vault `VaultFolder/.obsidian/plugins/your-plugin-id/`.
+1. **Ribbon Icon**: Click the calendar icon in the left sidebar
+2. **Command Palette**: Press `Cmd/Ctrl + P` and search for "Open Daily Notes Viewer"
+3. **Auto-open**: The viewer will open automatically on startup (if enabled in settings)
 
-## Improve code quality with eslint (optional)
-- [ESLint](https://eslint.org/) is a tool that analyzes your code to quickly find problems. You can run ESLint against your plugin to find common bugs and ways to improve your code. 
-- To use eslint with this project, make sure to install eslint from terminal:
-  - `npm install -g eslint`
-- To use eslint to analyze this project use this command:
-  - `eslint main.ts`
-  - eslint will then create a report with suggestions for code improvement by file and line number.
-- If your source code is in a folder, such as `src`, you can use eslint with this command to analyze all files in that folder:
-  - `eslint ./src/`
+### Viewing Notes
 
-## Funding URL
+- All daily notes are displayed in a scrollable list, sorted by date
+- Each note shows its date as a clickable link
+- The markdown content is rendered with full formatting
+- Empty notes are indicated with "(Empty note)"
 
-You can include funding URLs where people who use your plugin can financially support it.
+### Editing Notes
 
-The simple way is to set the `fundingUrl` field to your link in your `manifest.json` file:
+1. Click the **Edit** button on any note
+2. Make your changes in the textarea editor
+3. Click **Save** to save changes or **Cancel** to discard
 
-```json
-{
-    "fundingUrl": "https://buymeacoffee.com"
-}
+### Quick Actions
+
+- **Open**: Opens the note in a new tab
+- **Date Link**: Click the date to open the note in the current pane
+- **Refresh**: Reload the list of daily notes
+
+### Commands
+
+- **Open Daily Notes Viewer**: Opens or reveals the viewer
+- **Refresh Daily Notes Viewer**: Refreshes the notes list in an open viewer
+
+## Settings
+
+Access settings via Settings → Plugin Options → Daily Notes Viewer
+
+### Available Settings
+
+- **Daily notes folder**: Specify the folder where your daily notes are stored
+  - Leave empty to search in the root folder
+  - Example: `Daily Notes` or `Journal/Daily`
+
+- **Date format**: Currently supports YYYY-MM-DD format (e.g., 2025-10-24)
+  - This setting is informational only
+  - Notes must use YYYY-MM-DD format to be detected
+
+- **Open on startup**: Toggle automatic opening when Obsidian starts
+
+- **Sort order**: Choose how to sort your daily notes
+  - Newest first: Shows most recent notes at the top
+  - Oldest first: Shows oldest notes at the top
+
+## Daily Notes Format
+
+The plugin automatically detects daily notes based on their filename format:
+
+- **Required format**: `YYYY-MM-DD.md`
+- **Examples**:
+  - `2025-10-24.md`
+  - `2024-12-31.md`
+  - `2023-01-01.md`
+
+Notes with other naming patterns will not be displayed in the viewer.
+
+## Development
+
+### Build Commands
+
+- `npm run dev`: Start development mode with watch
+- `npm run build`: Build for production
+- `npm run version`: Bump version and update manifest
+
+### Project Structure
+
+```
+daily-notes-viewer/
+├── src/
+│   └── main.ts          # Main plugin code
+├── styles.css           # Plugin styles
+├── manifest.json        # Plugin manifest
+├── package.json         # NPM dependencies
+└── README.md           # Documentation
 ```
 
-If you have multiple URLs, you can also do:
+### Key Components
 
-```json
-{
-    "fundingUrl": {
-        "Buy Me a Coffee": "https://buymeacoffee.com",
-        "GitHub Sponsor": "https://github.com/sponsors",
-        "Patreon": "https://www.patreon.com/"
-    }
-}
-```
+- **DailyNotesView**: Custom ItemView that displays the daily notes
+- **DailyNotesViewerPlugin**: Main plugin class that manages the view lifecycle
+- **DailyNotesViewerSettingTab**: Settings interface for configuration
 
-## API Documentation
+## Tips and Tricks
 
-See https://github.com/obsidianmd/obsidian-api
+1. **Fast Navigation**: Use the date links to quickly jump to a specific daily note
+2. **Bulk Review**: Scroll through all your daily notes to review your progress over time
+3. **Quick Edits**: Make small edits directly in the viewer without opening separate tabs
+4. **Pin the View**: Keep the viewer open in your sidebar for easy access
+5. **Keyboard Shortcut**: Assign a custom hotkey to "Open Daily Notes Viewer" in Obsidian's hotkey settings
+
+## Troubleshooting
+
+### No daily notes showing up?
+
+- Ensure your daily notes follow the YYYY-MM-DD.md naming format
+- Check that the "Daily notes folder" setting points to the correct folder
+- Click the Refresh button to reload the notes list
+
+### Plugin not opening on startup?
+
+- Verify that "Open on startup" is enabled in settings
+- Check that the plugin is enabled in Community Plugins
+- Try restarting Obsidian
+
+### Edit button not working?
+
+- Make sure you have write permissions for the note
+- Check that the file still exists in your vault
+- Try refreshing the viewer
+
+## Support
+
+If you encounter any issues or have feature requests, please:
+
+1. Check the existing issues on GitHub
+2. Create a new issue with detailed information about the problem
+3. Include your Obsidian version and plugin version
+
+## Roadmap
+
+Potential future features:
+
+- Support for custom date formats
+- Filtering options (by date range, tags, etc.)
+- Search functionality within daily notes
+- Export all daily notes to a single file
+- Statistics and analytics for daily notes
+
+## License
+
+MIT License - see LICENSE file for details
+
+## Credits
+
+Built with the Obsidian API. Thanks to the Obsidian team for creating an amazing platform!
+
+---
+
+**Made with ❤️ for the Obsidian community**
