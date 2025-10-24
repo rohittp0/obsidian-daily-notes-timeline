@@ -34,10 +34,19 @@ export class Renderer {
 		});
 	}
 
-	renderKeyboardHints(container: HTMLElement): void {
+	renderKeyboardHints(container: HTMLElement, vimModeEnabled: boolean): void {
 		const hintsEl = container.createDiv('daily-notes-hints');
+
+		let hintText = 'Navigate: ↑↓';
+		if (vimModeEnabled) {
+			hintText += ' or j/k • Esc: command mode • i/a/o: insert mode';
+		} else {
+			hintText += ' or j/k (at boundaries)';
+		}
+		hintText += ' • Auto-saves while typing';
+
 		hintsEl.createEl('small', {
-			text: 'Navigate: ↑↓ or j/k (vim) • Auto-saves while typing',
+			text: hintText,
 			cls: 'daily-notes-hint-text'
 		});
 	}
@@ -64,10 +73,11 @@ export class Renderer {
 
 		const actionsEl = noteHeader.createDiv('daily-note-actions');
 		this.renderOpenButton(actionsEl, file);
+		const modeIndicator = this.renderModeIndicator(actionsEl);
 		const statusEl = this.renderStatusIndicator(actionsEl);
 
 		const contentDiv = noteEl.createDiv('daily-note-content');
-		await this.editorManager.createEditor(contentDiv, file, statusEl);
+		await this.editorManager.createEditor(contentDiv, file, statusEl, modeIndicator);
 	}
 
 	private renderNoteDate(container: HTMLElement, file: TFile): void {
@@ -91,6 +101,13 @@ export class Renderer {
 		openBtn.addEventListener('click', async () => {
 			const leaf = this.app.workspace.getLeaf('tab');
 			await leaf.openFile(file);
+		});
+	}
+
+	private renderModeIndicator(container: HTMLElement): HTMLElement {
+		return container.createEl('span', {
+			cls: 'vim-mode-indicator',
+			text: ''
 		});
 	}
 

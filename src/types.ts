@@ -5,6 +5,9 @@ export const DEFAULT_AUTO_SAVE_DELAY = 2000;
 export const DEFAULT_TEXTAREA_ROWS = 10;
 export const SAVE_INDICATOR_DURATION = 2000;
 
+// Vim mode types
+export type VimMode = 'command' | 'insert';
+
 // Settings interface
 export interface DailyNotesViewerSettings {
 	dailyNotesFolder: string;
@@ -13,6 +16,7 @@ export interface DailyNotesViewerSettings {
 	sortOrder: 'newest' | 'oldest';
 	autoSave: boolean;
 	autoSaveDelay: number;
+	vimModeEnabled: boolean;
 }
 
 // Default settings
@@ -22,5 +26,6 @@ export const DEFAULT_SETTINGS: DailyNotesViewerSettings = {
 	openOnStartup: true,
 	sortOrder: 'newest',
 	autoSave: true,
-	autoSaveDelay: DEFAULT_AUTO_SAVE_DELAY
+	autoSaveDelay: DEFAULT_AUTO_SAVE_DELAY,
+	vimModeEnabled: false
 };

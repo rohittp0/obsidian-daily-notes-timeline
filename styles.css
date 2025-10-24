@@ -133,6 +133,17 @@
 	background-color: var(--interactive-hover);
 }
 
+/* Vim Mode Indicator */
+.vim-mode-indicator {
+	font-size: 0.75em;
+	font-weight: 600;
+	padding: 2px 8px;
+	border-radius: 3px;
+	margin-right: 8px;
+	font-family: var(--font-monospace);
+	letter-spacing: 0.5px;
+}
+
 /* Save Status Indicator */
 .daily-note-status {
 	font-size: 1.2em;

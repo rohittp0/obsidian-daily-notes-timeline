@@ -5,6 +5,7 @@ import { FileManager } from './fileManager';
 import { NavigationManager } from './navigation';
 import { EditorManager } from './editorManager';
 import { Renderer } from './renderer';
+import { VimModeManager } from './vimMode';
 
 export class DailyNotesView extends ItemView {
 	plugin: DailyNotesViewerPlugin;
@@ -17,6 +18,7 @@ export class DailyNotesView extends ItemView {
 	private navigationManager: NavigationManager;
 	private readonly editorManager: EditorManager;
 	private renderer: Renderer;
+	private vimModeManager: VimModeManager;
 
 	constructor(leaf: WorkspaceLeaf, plugin: DailyNotesViewerPlugin) {
 		super(leaf);
@@ -24,6 +26,7 @@ export class DailyNotesView extends ItemView {
 
 		this.fileManager = new FileManager(this.app);
 		this.navigationManager = new NavigationManager(this.editors);
+		this.vimModeManager = new VimModeManager(this.editors, this.plugin.settings.vimModeEnabled);
 		this.editorManager = new EditorManager(
 			this.app,
 			this.plugin.settings,
@@ -31,6 +34,10 @@ export class DailyNotesView extends ItemView {
 			this.saveTimeouts
 		);
 		this.renderer = new Renderer(this.app, this.editorManager);
+
+		// Connect managers
+		this.navigationManager.setVimModeManager(this.vimModeManager);
+		this.editorManager.setVimModeManager(this.vimModeManager);
 	}
 
 	getViewType(): string {
@@ -73,7 +80,8 @@ export class DailyNotesView extends ItemView {
 		contentEl.addClass('daily-notes-viewer');
 		this.editors.clear();
 
-		// Update editor manager with latest settings
+		// Update managers with latest settings
+		this.vimModeManager.setEnabled(this.plugin.settings.vimModeEnabled);
 		this.editorManager.updateSettings(this.plugin.settings);
 
 		// Render header
@@ -84,7 +92,7 @@ export class DailyNotesView extends ItemView {
 		);
 
 		// Render keyboard hints
-		this.renderer.renderKeyboardHints(contentEl);
+		this.renderer.renderKeyboardHints(contentEl, this.plugin.settings.vimModeEnabled);
 
 		// Render notes
 		const notesContainer = contentEl.createDiv('daily-notes-container');

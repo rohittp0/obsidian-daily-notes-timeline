@@ -1,12 +1,14 @@
 import { App, TFile, Notice } from 'obsidian';
 import { DEFAULT_TEXTAREA_ROWS, SAVE_INDICATOR_DURATION } from '../types';
 import type { DailyNotesViewerSettings } from '../types';
+import type { VimModeManager } from './vimMode';
 
 export class EditorManager {
 	private app: App;
 	private settings: DailyNotesViewerSettings;
 	private editors: Map<string, HTMLTextAreaElement>;
 	private readonly saveTimeouts: Map<string, number>;
+	private vimModeManager?: VimModeManager;
 
 	constructor(
 		app: App,
@@ -20,14 +22,22 @@ export class EditorManager {
 		this.saveTimeouts = saveTimeouts;
 	}
 
+	setVimModeManager(vimModeManager: VimModeManager): void {
+		this.vimModeManager = vimModeManager;
+	}
+
 	updateSettings(settings: DailyNotesViewerSettings): void {
 		this.settings = settings;
+		if (this.vimModeManager) {
+			this.vimModeManager.setEnabled(settings.vimModeEnabled);
+		}
 	}
 
 	async createEditor(
 		container: HTMLElement,
 		file: TFile,
-		statusEl: HTMLElement
+		statusEl: HTMLElement,
+		modeIndicator: HTMLElement
 	): Promise<void> {
 		try {
 			const content = await this.app.vault.read(file);
@@ -38,6 +48,12 @@ export class EditorManager {
 
 			this.setupTextareaListeners(textarea, file, statusEl);
 			this.autoResizeTextarea(textarea);
+
+			// Setup vim mode for this editor
+			if (this.vimModeManager) {
+				this.vimModeManager.setupVimModeForEditor(textarea);
+				this.vimModeManager.registerModeIndicator(file.path, modeIndicator);
+			}
 		} catch (error) {
 			this.renderError(container);
 		}
