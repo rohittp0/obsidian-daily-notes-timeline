@@ -19,6 +19,7 @@ export class DailyNotesViewerSettingTab extends PluginSettingTab {
 		this.addDateFormatSetting(containerEl);
 		this.addOpenOnStartupSetting(containerEl);
 		this.addSortOrderSetting(containerEl);
+		this.addNavigationSetting(containerEl);
 		this.addVimModeSetting(containerEl);
 		this.addAutoSaveSetting(containerEl);
 		this.addAutoSaveDelaySetting(containerEl);
@@ -68,6 +69,18 @@ export class DailyNotesViewerSettingTab extends PluginSettingTab {
 				.setValue(this.plugin.settings.sortOrder)
 				.onChange(async (value: 'newest' | 'oldest') => {
 					this.plugin.settings.sortOrder = value;
+					await this.plugin.saveSettings();
+				}));
+	}
+
+	private addNavigationSetting(containerEl: HTMLElement): void {
+		new Setting(containerEl)
+			.setName('Keyboard navigation')
+			.setDesc('Enable navigation between notes using arrow keys (and j/k in vim mode)')
+			.addToggle(toggle => toggle
+				.setValue(this.plugin.settings.navigationEnabled)
+				.onChange(async (value) => {
+					this.plugin.settings.navigationEnabled = value;
 					await this.plugin.saveSettings();
 				}));
 	}

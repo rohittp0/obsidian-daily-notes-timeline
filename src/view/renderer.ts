@@ -34,16 +34,20 @@ export class Renderer {
 		});
 	}
 
-	renderKeyboardHints(container: HTMLElement, vimModeEnabled: boolean): void {
+	renderKeyboardHints(container: HTMLElement, vimModeEnabled: boolean, navigationEnabled: boolean): void {
 		const hintsEl = container.createDiv('daily-notes-hints');
 
-		let hintText = 'Navigate: ↑↓';
-		if (vimModeEnabled) {
-			hintText += ' or j/k • Esc: command mode • i/a/o: insert mode';
-		} else {
-			hintText += ' or j/k (at boundaries)';
+		let hintText = '';
+
+		if (navigationEnabled) {
+			hintText = 'Navigate: ↑↓';
+			if (vimModeEnabled) {
+				hintText += ' or j/k • Esc: command mode • i/a/o: insert mode';
+			}
+			hintText += ' • ';
 		}
-		hintText += ' • Auto-saves while typing';
+		else
+			hintText += 'Auto-saves while typing';
 
 		hintsEl.createEl('small', {
 			text: hintText,

@@ -17,6 +17,7 @@ export interface DailyNotesViewerSettings {
 	autoSave: boolean;
 	autoSaveDelay: number;
 	vimModeEnabled: boolean;
+	navigationEnabled: boolean;
 }
 
 // Default settings
@@ -27,5 +28,6 @@ export const DEFAULT_SETTINGS: DailyNotesViewerSettings = {
 	sortOrder: 'newest',
 	autoSave: true,
 	autoSaveDelay: DEFAULT_AUTO_SAVE_DELAY,
-	vimModeEnabled: false
+	vimModeEnabled: false,
+	navigationEnabled: true
 };

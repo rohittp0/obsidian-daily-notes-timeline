@@ -37,6 +37,7 @@ export class DailyNotesView extends ItemView {
 
 		// Connect managers
 		this.navigationManager.setVimModeManager(this.vimModeManager);
+		this.navigationManager.updateSettings(this.plugin.settings);
 		this.editorManager.setVimModeManager(this.vimModeManager);
 	}
 
@@ -82,6 +83,7 @@ export class DailyNotesView extends ItemView {
 
 		// Update managers with latest settings
 		this.vimModeManager.setEnabled(this.plugin.settings.vimModeEnabled);
+		this.navigationManager.updateSettings(this.plugin.settings);
 		this.editorManager.updateSettings(this.plugin.settings);
 
 		// Render header
@@ -92,7 +94,11 @@ export class DailyNotesView extends ItemView {
 		);
 
 		// Render keyboard hints
-		this.renderer.renderKeyboardHints(contentEl, this.plugin.settings.vimModeEnabled);
+		this.renderer.renderKeyboardHints(
+			contentEl,
+			this.plugin.settings.vimModeEnabled,
+			this.plugin.settings.navigationEnabled
+		);
 
 		// Render notes
 		const notesContainer = contentEl.createDiv('daily-notes-container');
