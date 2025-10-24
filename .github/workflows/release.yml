@@ -27,19 +27,18 @@ jobs:
         run: |
           VERSION=$(cat manifest.json | grep -o '"version"[^,]*' | grep -o '[0-9.]*')
           echo "version=${VERSION}" >> $GITHUB_OUTPUT
-          echo "tag=v${VERSION}" >> $GITHUB_OUTPUT
           echo "Version: ${VERSION}"
 
       - name: Check if tag exists
         id: check_tag
         run: |
           git fetch --tags
-          if git rev-parse "v${{ steps.get_version.outputs.version }}" >/dev/null 2>&1; then
+          if git rev-parse "${{ steps.get_version.outputs.version }}" >/dev/null 2>&1; then
             echo "exists=true" >> $GITHUB_OUTPUT
-            echo "::notice::Tag v${{ steps.get_version.outputs.version }} already exists. Skipping release."
+            echo "::notice::Tag ${{ steps.get_version.outputs.version }} already exists. Skipping release."
           else
             echo "exists=false" >> $GITHUB_OUTPUT
-            echo "::notice::Tag v${{ steps.get_version.outputs.version }} does not exist. Proceeding with release."
+            echo "::notice::Tag ${{ steps.get_version.outputs.version }} does not exist. Proceeding with release."
           fi
 
       - name: Setup Node.js
@@ -61,7 +60,7 @@ jobs:
         if: steps.check_tag.outputs.exists == 'false'
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ steps.get_version.outputs.tag }}
+          tag_name: ${{ steps.get_version.outputs.version }}
           name: ${{ steps.get_version.outputs.version }}
           draft: false
           prerelease: false
