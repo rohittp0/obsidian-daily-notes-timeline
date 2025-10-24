@@ -31,7 +31,7 @@ A powerful Obsidian plugin that displays all your daily notes in a single, unifi
 
 ### Manual Installation
 
-1. Download the latest release from the [releases page](https://github.com/yourusername/obsidian-daily-notes-viewer/releases)
+1. Download the latest release from the [releases page](https://github.com/rohittp0/obsidian-daily-notes-viewer/releases)
 2. Extract `main.js`, `styles.css`, and `manifest.json` to:
    ```
    <vault>/.obsidian/plugins/daily-notes-viewer/
@@ -44,7 +44,7 @@ A powerful Obsidian plugin that displays all your daily notes in a single, unifi
 1. Clone this repository to your vault's plugins folder:
    ```bash
    cd /path/to/your/vault/.obsidian/plugins
-   git clone https://github.com/yourusername/obsidian-daily-notes-viewer daily-notes-viewer
+   git clone https://github.com/rohittp0/obsidian-daily-notes-viewer daily-notes-viewer
    cd daily-notes-viewer
    npm install
    npm run dev
@@ -295,7 +295,7 @@ Contributions are welcome! Please:
 
 If you encounter issues or have feature requests:
 
-1. Check existing [GitHub issues](https://github.com/yourusername/obsidian-daily-notes-viewer/issues)
+1. Check existing [GitHub issues](https://github.com/rohittp0/obsidian-daily-notes-viewer/issues)
 2. Create a new issue with:
    - Obsidian version
    - Plugin version
