@@ -1,6 +1,12 @@
 import esbuild from "esbuild";
 import process from "process";
 import builtins from "builtin-modules";
+import fs from "fs";
+import path from "path";
+import { fileURLToPath } from "url";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const banner =
 `/*
@@ -10,6 +16,46 @@ if you want to view the source, please visit the github repository of this plugi
 `;
 
 const prod = (process.argv[2] === "production");
+
+// Vault path for development - change this to match your vault location
+const vaultPath = path.join(process.env.HOME, "Documents/Obsidian Vault/.obsidian/plugins/daily-notes-viewer");
+
+// Plugin to copy files to vault after build
+const copyToVaultPlugin = {
+	name: "copy-to-vault",
+	setup(build) {
+		build.onEnd(() => {
+			if (!prod) {
+				try {
+					// Create plugin directory if it doesn't exist
+					if (!fs.existsSync(vaultPath)) {
+						fs.mkdirSync(vaultPath, { recursive: true });
+					}
+
+					// Files to copy
+					const filesToCopy = [
+						{ src: "main.js", dest: path.join(vaultPath, "main.js") },
+						{ src: "styles.css", dest: path.join(vaultPath, "styles.css") },
+						{ src: "manifest.json", dest: path.join(vaultPath, "manifest.json") }
+					];
+
+					// Copy each file
+					filesToCopy.forEach(({ src, dest }) => {
+						const srcPath = path.join(__dirname, src);
+						if (fs.existsSync(srcPath)) {
+							fs.copyFileSync(srcPath, dest);
+							console.log(`✓ Copied ${src} to vault`);
+						}
+					});
+
+					console.log(`✓ Plugin files copied to: ${vaultPath}`);
+				} catch (error) {
+					console.error("Error copying files to vault:", error);
+				}
+			}
+		});
+	}
+};
 
 const context = await esbuild.context({
 	banner: {
@@ -39,6 +85,7 @@ const context = await esbuild.context({
 	treeShaking: true,
 	outfile: "main.js",
 	minify: prod,
+	plugins: [copyToVaultPlugin],
 });
 
 if (prod) {

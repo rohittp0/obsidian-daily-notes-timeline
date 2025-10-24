@@ -7,8 +7,7 @@ import {
 	TFile,
 	WorkspaceLeaf,
 	Notice,
-	MarkdownRenderer,
-	MarkdownView
+	MarkdownRenderer
 } from 'obsidian';
 
 // Constants for the view type
@@ -64,7 +63,7 @@ class DailyNotesView extends ItemView {
 
 	// Load all daily notes from the specified folder
 	async loadDailyNotes() {
-		const { dailyNotesFolder, dateFormat, sortOrder } = this.plugin.settings;
+		const { dailyNotesFolder, sortOrder } = this.plugin.settings;
 		const allFiles = this.app.vault.getMarkdownFiles();
 
 		// Filter files based on the daily notes folder and date format pattern
