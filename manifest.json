@@ -1,9 +1,9 @@
 {
-	"id": "daily-notes-viewer",
-	"name": "Daily Notes Viewer",
+	"id": "daily-notes-timeline",
+	"name": "Daily Notes Timeline",
 	"version": "1.0.0",
 	"minAppVersion": "0.15.0",
-	"description": "View and edit all your daily notes in a single unified page. Opens automatically on startup.",
+	"description": "View and edit all your daily notes in a unified timeline. Features vim mode, keyboard navigation, and auto-save.",
 	"author": "Rohit TP",
 	"authorUrl": "https://rohittp.com",
 	"isDesktopOnly": false

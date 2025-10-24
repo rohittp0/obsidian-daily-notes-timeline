@@ -1,6 +1,6 @@
-# Daily Notes Viewer for Obsidian
+# Daily Notes Timeline for Obsidian
 
-A powerful Obsidian plugin that displays all your daily notes in a single, unified view with always-on editing, vim mode support, and keyboard navigation. Perfect for reviewing your journal entries, tracking progress, and managing your daily notes efficiently.
+A powerful Obsidian plugin that displays all your daily notes in a unified timeline with always-on editing, vim mode support, and keyboard navigation. Perfect for reviewing your journal entries, tracking progress, and managing your daily notes efficiently.
 
 ## Features
 
@@ -26,15 +26,15 @@ A powerful Obsidian plugin that displays all your daily notes in a single, unifi
 
 1. Open Obsidian Settings
 2. Go to **Community Plugins** and disable Safe Mode (if needed)
-3. Click **Browse** and search for "Daily Notes Viewer"
+3. Click **Browse** and search for "Daily Notes Timeline"
 4. Click **Install**, then **Enable**
 
 ### Manual Installation
 
-1. Download the latest release from the [releases page](https://github.com/rohittp0/obsidian-daily-notes-viewer/releases)
+1. Download the latest release from the [releases page](https://github.com/rohittp0/obsidian-daily-notes-timeline/releases)
 2. Extract `main.js`, `styles.css`, and `manifest.json` to:
    ```
-   <vault>/.obsidian/plugins/daily-notes-viewer/
+   <vault>/.obsidian/plugins/daily-notes-timeline/
    ```
 3. Reload Obsidian
 4. Enable the plugin in Settings → Community Plugins
@@ -44,8 +44,8 @@ A powerful Obsidian plugin that displays all your daily notes in a single, unifi
 1. Clone this repository to your vault's plugins folder:
    ```bash
    cd /path/to/your/vault/.obsidian/plugins
-   git clone https://github.com/rohittp0/obsidian-daily-notes-viewer daily-notes-viewer
-   cd daily-notes-viewer
+   git clone https://github.com/rohittp0/obsidian-daily-notes-timeline daily-notes-timeline
+   cd daily-notes-timeline
    npm install
    npm run dev
    ```
@@ -55,12 +55,12 @@ A powerful Obsidian plugin that displays all your daily notes in a single, unifi
 
 ## Usage
 
-### Opening the Daily Notes Viewer
+### Opening the Daily Notes Timeline
 
-Access the viewer in multiple ways:
+Access the timeline in multiple ways:
 
 1. **Ribbon Icon**: Click the calendar icon in the left sidebar
-2. **Command Palette**: `Cmd/Ctrl + P` → "Open Daily Notes Viewer"
+2. **Command Palette**: `Cmd/Ctrl + P` → "Open Daily Notes Timeline"
 3. **Auto-open**: Opens automatically on startup (if enabled in settings)
 
 ### Editing Notes
@@ -105,12 +105,12 @@ All notes are **always editable** - no buttons needed:
 
 ### Commands
 
-- **Open Daily Notes Viewer**: Opens or reveals the viewer
-- **Refresh Daily Notes Viewer**: Refreshes the notes list
+- **Open Daily Notes Timeline**: Opens or reveals the timeline
+- **Refresh Daily Notes Timeline**: Refreshes the notes list
 
 ## Settings
 
-Access via **Settings → Daily Notes Viewer**
+Access via **Settings → Daily Notes Timeline**
 
 ### File Settings
 
@@ -183,7 +183,7 @@ npm run version    # Bump version and update manifest
 ### Project Structure
 
 ```
-daily-notes-viewer/
+daily-notes-timeline/
 ├── src/
 │   ├── main.ts                    # Plugin entry point
 │   ├── types.ts                   # Type definitions & constants
@@ -223,7 +223,7 @@ daily-notes-viewer/
 
 1. **Vim Mode**: Enable for efficient keyboard-based editing and navigation
 2. **Pin the View**: Open in main pane for a dedicated daily notes workspace
-3. **Custom Hotkey**: Assign a hotkey to "Open Daily Notes Viewer" for quick access
+3. **Custom Hotkey**: Assign a hotkey to "Open Daily Notes Timeline" for quick access
 4. **Disable Navigation**: Turn off keyboard navigation if you prefer standard text editing
 5. **Adjust Auto-Save**: Increase delay if you want fewer saves, decrease for more frequent saves
 6. **Refresh**: Use the refresh button after creating new daily notes
@@ -295,7 +295,7 @@ Contributions are welcome! Please:
 
 If you encounter issues or have feature requests:
 
-1. Check existing [GitHub issues](https://github.com/rohittp0/obsidian-daily-notes-viewer/issues)
+1. Check existing [GitHub issues](https://github.com/rohittp0/obsidian-daily-notes-timeline/issues)
 2. Create a new issue with:
    - Obsidian version
    - Plugin version

@@ -1,7 +1,7 @@
 {
-	"name": "obsidian-daily-notes-viewer",
+	"name": "obsidian-daily-notes-timeline",
 	"version": "1.0.0",
-	"description": "View and edit all your daily notes in a single unified page",
+	"description": "View and edit all your daily notes in a unified timeline",
 	"main": "main.js",
 	"scripts": {
 		"dev": "node esbuild.config.mjs",
