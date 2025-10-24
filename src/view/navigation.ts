@@ -57,7 +57,7 @@ export class NavigationManager {
 			currentIndex,
 			cursorAtStart,
 			cursorAtEnd,
-			isVimCommandMode,
+			isVimCommandMode || false,
 			isVimEnabled || false
 		);
 
