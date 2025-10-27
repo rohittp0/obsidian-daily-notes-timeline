@@ -139,12 +139,10 @@ export class VimModeManager {
 
 	private enableEditor(editor: HTMLTextAreaElement): void {
 		editor.removeAttribute('readonly');
-		editor.style.cursor = 'text';
 	}
 
 	private disableEditor(editor: HTMLTextAreaElement): void {
 		editor.setAttribute('readonly', 'true');
-		editor.style.cursor = 'default';
 	}
 
 	private updateAllIndicators(): void {
@@ -156,25 +154,27 @@ export class VimModeManager {
 	private updateIndicator(indicator: HTMLElement): void {
 		if (!this.enabled) {
 			indicator.textContent = '';
+			indicator.removeClass('vim-normal');
+			indicator.removeClass('vim-insert');
 			return;
 		}
 
 		if (this.currentMode === 'command') {
 			indicator.textContent = 'NORMAL';
-			indicator.style.backgroundColor = 'var(--interactive-accent)';
-			indicator.style.color = 'var(--text-on-accent)';
+			indicator.removeClass('vim-insert');
+			indicator.addClass('vim-normal');
 		} else {
 			indicator.textContent = 'INSERT';
-			indicator.style.backgroundColor = 'var(--text-success)';
-			indicator.style.color = 'var(--text-on-accent)';
+			indicator.removeClass('vim-normal');
+			indicator.addClass('vim-insert');
 		}
 	}
 
 	private clearAllIndicators(): void {
 		for (const indicator of this.modeIndicators.values()) {
 			indicator.textContent = '';
-			indicator.style.backgroundColor = '';
-			indicator.style.color = '';
+			indicator.removeClass('vim-normal');
+			indicator.removeClass('vim-insert');
 		}
 	}
 

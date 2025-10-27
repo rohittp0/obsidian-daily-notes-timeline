@@ -144,12 +144,30 @@
 	letter-spacing: 0.5px;
 }
 
+.vim-mode-indicator.vim-normal {
+	background-color: var(--interactive-accent);
+	color: var(--text-on-accent);
+}
+
+.vim-mode-indicator.vim-insert {
+	background-color: var(--text-success);
+	color: var(--text-on-accent);
+}
+
 /* Save Status Indicator */
 .daily-note-status {
 	font-size: 1.2em;
 	min-width: 20px;
 	text-align: center;
 	font-weight: bold;
+}
+
+.daily-note-status.status-unsaved {
+	color: var(--text-warning);
+}
+
+.daily-note-status.status-saved {
+	color: var(--text-success);
 }
 
 /* Note Content - Always in Edit Mode */
@@ -172,6 +190,11 @@
 	resize: none;
 	overflow: hidden;
 	transition: border-color 0.2s, box-shadow 0.2s;
+	cursor: text;
+}
+
+.daily-note-editor[readonly] {
+	cursor: default;
 }
 
 .daily-note-editor:focus {

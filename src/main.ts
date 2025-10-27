@@ -30,7 +30,8 @@ export default class DailyNotesViewerPlugin extends Plugin {
 	}
 
 	onunload(): void {
-		this.app.workspace.detachLeavesOfType(VIEW_TYPE_DAILY_NOTES);
+		// Note: We don't detach leaves here as per Obsidian plugin guidelines
+		// Obsidian will handle cleanup of views automatically
 	}
 
 	private registerCommands(): void {

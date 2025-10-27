@@ -79,8 +79,14 @@ export class EditorManager {
 	}
 
 	private autoResizeTextarea(textarea: HTMLTextAreaElement): void {
+		// Temporarily reset height to auto to get accurate scrollHeight
+		const currentHeight = textarea.style.height;
 		textarea.style.height = 'auto';
-		textarea.style.height = `${textarea.scrollHeight}px`;
+		const newHeight = textarea.scrollHeight;
+		// Only update if different to avoid unnecessary reflows
+		if (currentHeight !== `${newHeight}px`) {
+			textarea.style.height = `${newHeight}px`;
+		}
 	}
 
 	private scheduleAutoSave(
@@ -104,7 +110,8 @@ export class EditorManager {
 
 	private showUnsavedIndicator(statusEl: HTMLElement): void {
 		statusEl.textContent = '●';
-		statusEl.style.color = 'var(--text-warning)';
+		statusEl.removeClass('status-saved');
+		statusEl.addClass('status-unsaved');
 	}
 
 	private scheduleSave(
@@ -123,10 +130,12 @@ export class EditorManager {
 
 	private showSavedIndicator(statusEl: HTMLElement): void {
 		statusEl.textContent = '✓';
-		statusEl.style.color = 'var(--text-success)';
+		statusEl.removeClass('status-unsaved');
+		statusEl.addClass('status-saved');
 
 		setTimeout(() => {
 			statusEl.textContent = '';
+			statusEl.removeClass('status-saved');
 		}, SAVE_INDICATOR_DURATION);
 	}
 
