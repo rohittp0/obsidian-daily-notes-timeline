@@ -12,7 +12,7 @@ export class Renderer {
 
 	renderHeader(container: HTMLElement, notesCount: number, onRefresh: () => void): void {
 		const headerEl = container.createDiv('daily-notes-header');
-		headerEl.createEl('h2', { text: 'Daily Notes' });
+		headerEl.createEl('h2', { text: 'Daily notes' });
 
 		const controlsEl = headerEl.createDiv('daily-notes-controls');
 		this.renderRefreshButton(controlsEl, onRefresh);
@@ -22,7 +22,7 @@ export class Renderer {
 	private renderRefreshButton(container: HTMLElement, onRefresh: () => void): void {
 		const refreshBtn = container.createEl('button', { text: 'Refresh' });
 		refreshBtn.addEventListener('click', async () => {
-			onRefresh();
+			await onRefresh();
 			new Notice('Daily notes refreshed');
 		});
 	}

@@ -13,7 +13,7 @@ export class DailyNotesViewerSettingTab extends PluginSettingTab {
 		const { containerEl } = this;
 		containerEl.empty();
 
-		containerEl.createEl('h2', { text: 'Daily Notes Viewer Settings' });
+		new Setting(containerEl).setName('Daily Notes Timeline settings').setHeading();
 
 		this.addDailyNotesFolderSetting(containerEl);
 		this.addDateFormatSetting(containerEl);
@@ -30,7 +30,7 @@ export class DailyNotesViewerSettingTab extends PluginSettingTab {
 			.setName('Daily notes folder')
 			.setDesc('Folder where your daily notes are stored (leave empty for root folder)')
 			.addText(text => text
-				.setPlaceholder('Example: Daily Notes')
+				.setPlaceholder('Example: daily notes')
 				.setValue(this.plugin.settings.dailyNotesFolder)
 				.onChange(async (value) => {
 					this.plugin.settings.dailyNotesFolder = value;
@@ -50,7 +50,7 @@ export class DailyNotesViewerSettingTab extends PluginSettingTab {
 	private addOpenOnStartupSetting(containerEl: HTMLElement): void {
 		new Setting(containerEl)
 			.setName('Open on startup')
-			.setDesc('Automatically open the Daily Notes Viewer when Obsidian starts')
+			.setDesc('Automatically open the daily notes viewer when Obsidian starts')
 			.addToggle(toggle => toggle
 				.setValue(this.plugin.settings.openOnStartup)
 				.onChange(async (value) => {
@@ -88,7 +88,7 @@ export class DailyNotesViewerSettingTab extends PluginSettingTab {
 	private addVimModeSetting(containerEl: HTMLElement): void {
 		new Setting(containerEl)
 			.setName('Vim mode')
-			.setDesc('Enable vim-style navigation and editing (ESC for command mode, i/a/o for insert mode)')
+			.setDesc('Enable vim-style navigation and editing (Esc for command mode, i/a/o for insert mode)')
 			.addToggle(toggle => toggle
 				.setValue(this.plugin.settings.vimModeEnabled)
 				.onChange(async (value) => {

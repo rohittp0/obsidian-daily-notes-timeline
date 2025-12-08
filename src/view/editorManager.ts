@@ -54,7 +54,7 @@ export class EditorManager {
 				this.vimModeManager.setupVimModeForEditor(textarea);
 				this.vimModeManager.registerModeIndicator(file.path, modeIndicator);
 			}
-		} catch (error) {
+		} catch (_error) {
 			this.renderError(container);
 		}
 	}
@@ -79,13 +79,13 @@ export class EditorManager {
 	}
 
 	private autoResizeTextarea(textarea: HTMLTextAreaElement): void {
-		// Temporarily reset height to auto to get accurate scrollHeight
-		const currentHeight = textarea.style.height;
-		textarea.style.height = 'auto';
+		// Temporarily reset height to get accurate scrollHeight
+		const currentHeight = textarea.style.getPropertyValue('--textarea-height');
+		textarea.style.removeProperty('--textarea-height');
 		const newHeight = textarea.scrollHeight;
 		// Only update if different to avoid unnecessary reflows
 		if (currentHeight !== `${newHeight}px`) {
-			textarea.style.height = `${newHeight}px`;
+			textarea.style.setProperty('--textarea-height', `${newHeight}px`);
 		}
 	}
 

@@ -15,8 +15,8 @@ export default class DailyNotesViewerPlugin extends Plugin {
 			(leaf: WorkspaceLeaf) => new DailyNotesView(leaf, this)
 		);
 
-		this.addRibbonIcon('calendar-with-checkmark', 'Open Daily Notes Viewer', () => {
-			this.activateView();
+		this.addRibbonIcon('calendar-with-checkmark', 'Open daily notes viewer', () => {
+			void this.activateView();
 		});
 
 		this.registerCommands();
@@ -24,7 +24,7 @@ export default class DailyNotesViewerPlugin extends Plugin {
 
 		if (this.settings.openOnStartup) {
 			this.app.workspace.onLayoutReady(() => {
-				this.activateView();
+				void this.activateView();
 			});
 		}
 	}
@@ -37,13 +37,13 @@ export default class DailyNotesViewerPlugin extends Plugin {
 	private registerCommands(): void {
 		this.addCommand({
 			id: 'open-daily-notes-viewer',
-			name: 'Open Daily Notes Viewer',
+			name: 'Open daily notes viewer',
 			callback: () => this.activateView()
 		});
 
 		this.addCommand({
 			id: 'refresh-daily-notes-viewer',
-			name: 'Refresh Daily Notes Viewer',
+			name: 'Refresh daily notes viewer',
 			callback: () => this.refreshView()
 		});
 	}
@@ -52,11 +52,11 @@ export default class DailyNotesViewerPlugin extends Plugin {
 		const leaves = this.app.workspace.getLeavesOfType(VIEW_TYPE_DAILY_NOTES);
 		if (leaves.length > 0) {
 			const view = leaves[0].view as DailyNotesView;
-			await view.loadDailyNotes();
+			view.loadDailyNotes();
 			await view.render();
 			new Notice('Daily notes refreshed');
 		} else {
-			new Notice('Daily Notes Viewer is not open');
+			new Notice('Daily notes viewer is not open');
 		}
 	}
 

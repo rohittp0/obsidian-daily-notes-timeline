@@ -179,6 +179,7 @@
 .daily-note-editor {
 	width: 100%;
 	min-height: 150px;
+	height: var(--textarea-height, auto);
 	padding: 12px;
 	font-family: var(--font-text);
 	font-size: 1em;

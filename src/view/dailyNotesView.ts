@@ -46,7 +46,7 @@ export class DailyNotesView extends ItemView {
 	}
 
 	getDisplayText(): string {
-		return 'Daily Notes';
+		return 'Daily notes';
 	}
 
 	getIcon(): string {
@@ -54,7 +54,7 @@ export class DailyNotesView extends ItemView {
 	}
 
 	async onOpen(): Promise<void> {
-		await this.loadDailyNotes();
+		this.loadDailyNotes();
 		await this.render();
 		this.navigationManager.setupKeyboardNavigation(this.contentEl);
 	}
@@ -71,7 +71,7 @@ export class DailyNotesView extends ItemView {
 		this.saveTimeouts.clear();
 	}
 
-	async loadDailyNotes(): Promise<void> {
+	loadDailyNotes(): void {
 		this.dailyNotes = this.fileManager.loadDailyNotes(this.plugin.settings);
 	}
 
@@ -90,7 +90,7 @@ export class DailyNotesView extends ItemView {
 		this.renderer.renderHeader(
 			contentEl,
 			this.dailyNotes.length,
-			() => this.handleRefresh()
+			() => void this.handleRefresh()
 		);
 
 		// Render keyboard hints
@@ -113,7 +113,7 @@ export class DailyNotesView extends ItemView {
 	}
 
 	private async handleRefresh(): Promise<void> {
-		await this.loadDailyNotes();
+		this.loadDailyNotes();
 		await this.render();
 	}
 }
