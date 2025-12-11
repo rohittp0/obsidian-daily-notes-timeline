@@ -13,8 +13,6 @@ export class DailyNotesViewerSettingTab extends PluginSettingTab {
 		const { containerEl } = this;
 		containerEl.empty();
 
-		new Setting(containerEl).setName('Daily Notes Timeline settings').setHeading();
-
 		this.addDailyNotesFolderSetting(containerEl);
 		this.addDateFormatSetting(containerEl);
 		this.addOpenOnStartupSetting(containerEl);
@@ -41,7 +39,7 @@ export class DailyNotesViewerSettingTab extends PluginSettingTab {
 	private addDateFormatSetting(containerEl: HTMLElement): void {
 		new Setting(containerEl)
 			.setName('Date format')
-			.setDesc('Currently supports YYYY-MM-DD format (e.g., 2025-10-24)')
+			.setDesc('currently supports YYYY-MM-DD format (e.g., 2025-10-24)')
 			.addText(text => text
 				.setValue(this.plugin.settings.dateFormat)
 				.setDisabled(true));
@@ -88,7 +86,7 @@ export class DailyNotesViewerSettingTab extends PluginSettingTab {
 	private addVimModeSetting(containerEl: HTMLElement): void {
 		new Setting(containerEl)
 			.setName('Vim mode')
-			.setDesc('Enable vim-style navigation and editing (Esc for command mode, i/a/o for insert mode)')
+			.setDesc('enable vim-style navigation and editing (Esc for command mode, i/a/o for insert mode)')
 			.addToggle(toggle => toggle
 				.setValue(this.plugin.settings.vimModeEnabled)
 				.onChange(async (value) => {

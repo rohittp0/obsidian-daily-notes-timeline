@@ -54,7 +54,7 @@ export class EditorManager {
 				this.vimModeManager.setupVimModeForEditor(textarea);
 				this.vimModeManager.registerModeIndicator(file.path, modeIndicator);
 			}
-		} catch (_error) {
+		} catch {
 			this.renderError(container);
 		}
 	}
@@ -119,13 +119,17 @@ export class EditorManager {
 		textarea: HTMLTextAreaElement,
 		statusEl: HTMLElement
 	): void {
-		const timeout = window.setTimeout(async () => {
-			await this.saveNote(file, textarea.value);
-			this.showSavedIndicator(statusEl);
-			this.saveTimeouts.delete(file.path);
+		const timeout = window.setTimeout(() => {
+			void this.performSave(file, textarea.value, statusEl);
 		}, this.settings.autoSaveDelay);
 
 		this.saveTimeouts.set(file.path, timeout);
+	}
+
+	private async performSave(file: TFile, content: string, statusEl: HTMLElement): Promise<void> {
+		await this.saveNote(file, content);
+		this.showSavedIndicator(statusEl);
+		this.saveTimeouts.delete(file.path);
 	}
 
 	private showSavedIndicator(statusEl: HTMLElement): void {

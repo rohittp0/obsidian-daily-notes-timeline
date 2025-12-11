@@ -21,8 +21,8 @@ export class Renderer {
 
 	private renderRefreshButton(container: HTMLElement, onRefresh: () => void): void {
 		const refreshBtn = container.createEl('button', { text: 'Refresh' });
-		refreshBtn.addEventListener('click', async () => {
-			await onRefresh();
+		refreshBtn.addEventListener('click', () => {
+			onRefresh();
 			new Notice('Daily notes refreshed');
 		});
 	}
@@ -57,7 +57,7 @@ export class Renderer {
 
 	renderEmptyState(container: HTMLElement): void {
 		container.createEl('p', {
-			text: 'No daily notes found. Create daily notes with YYYY-MM-DD format (e.g., 2025-10-24.md)',
+			text: 'No daily notes found. create daily notes with YYYY-MM-DD format (e.g., 2025-10-24.md)',
 			cls: 'daily-notes-empty'
 		});
 	}
@@ -90,10 +90,10 @@ export class Renderer {
 			text: file.basename,
 			cls: 'internal-link'
 		});
-		link.addEventListener('click', async (e) => {
+		link.addEventListener('click', (e) => {
 			e.preventDefault();
 			const leaf = this.app.workspace.getLeaf('tab');
-			await leaf.openFile(file);
+			void leaf.openFile(file);
 		});
 	}
 
@@ -102,9 +102,9 @@ export class Renderer {
 			text: 'Open',
 			cls: 'daily-note-btn'
 		});
-		openBtn.addEventListener('click', async () => {
+		openBtn.addEventListener('click', () => {
 			const leaf = this.app.workspace.getLeaf('tab');
-			await leaf.openFile(file);
+			void leaf.openFile(file);
 		});
 	}
 
