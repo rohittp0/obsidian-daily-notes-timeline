@@ -57,7 +57,7 @@ export class Renderer {
 
 	renderEmptyState(container: HTMLElement): void {
 		container.createEl('p', {
-			text: 'No daily notes found. create daily notes with YYYY-MM-DD format (e.g., 2025-10-24.md)',
+			text: 'No daily notes found. Create daily notes with YYYY-MM-DD format (e.g., 2025-10-24.md)',
 			cls: 'daily-notes-empty'
 		});
 	}
