@@ -86,7 +86,7 @@ export class DailyNotesViewerSettingTab extends PluginSettingTab {
 	private addVimModeSetting(containerEl: HTMLElement): void {
 		new Setting(containerEl)
 			.setName('Vim mode')
-			.setDesc('Enable vim-style navigation and editing (Esc for command mode, i/a/o for insert mode)')
+			.setDesc('Enable vim-style navigation and editing (esc for command mode, i/a/o for insert mode)')
 			.addToggle(toggle => toggle
 				.setValue(this.plugin.settings.vimModeEnabled)
 				.onChange(async (value) => {
