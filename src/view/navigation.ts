@@ -49,6 +49,19 @@ export class NavigationManager {
 			return;
 		}
 
+		// In vim command mode (or arrow keys), try line-by-line movement first
+		const isDownKey = e.key === 'j' || e.key === 'ArrowDown';
+		const isUpKey = e.key === 'k' || e.key === 'ArrowUp';
+
+		if (isVimCommandMode && (isDownKey || isUpKey) && !e.shiftKey) {
+			const direction = isDownKey ? 'down' : 'up';
+			if (this.moveCursorVertically(currentEditor, direction)) {
+				e.preventDefault();
+				return;
+			}
+			// At boundary — fall through to cross-note navigation
+		}
+
 		const cursorAtStart = currentEditor.selectionStart === 0;
 		const cursorAtEnd = currentEditor.selectionStart === currentEditor.value.length;
 
@@ -75,19 +88,13 @@ export class NavigationManager {
 		isVimCommandMode: boolean,
 		isVimEnabled: boolean
 	): number | null {
-		// In vim command mode, both j/k and arrow keys navigate freely
+		// In vim command mode, j/k and arrow keys navigate to adjacent notes
+		// only when moveCursorVertically already failed (cursor at first/last line)
 		if (isVimCommandMode) {
-			if (e.key === 'k' && !e.shiftKey) {
+			if ((e.key === 'k' || e.key === 'ArrowUp') && !e.shiftKey) {
 				return currentIndex - 1;
 			}
-			if (e.key === 'j' && !e.shiftKey) {
-				return currentIndex + 1;
-			}
-			// Arrow keys also work in command mode
-			if (e.key === 'ArrowUp') {
-				return currentIndex - 1;
-			}
-			if (e.key === 'ArrowDown') {
+			if ((e.key === 'j' || e.key === 'ArrowDown') && !e.shiftKey) {
 				return currentIndex + 1;
 			}
 		}
@@ -114,6 +121,54 @@ export class NavigationManager {
 		editor.focus();
 		const position = placeAtStart ? 0 : editor.value.length;
 		editor.setSelectionRange(position, position);
+	}
+
+	private isCursorOnFirstLine(editor: HTMLTextAreaElement): boolean {
+		const textBeforeCursor = editor.value.substring(0, editor.selectionStart);
+		return !textBeforeCursor.includes('\n');
+	}
+
+	private isCursorOnLastLine(editor: HTMLTextAreaElement): boolean {
+		const textAfterCursor = editor.value.substring(editor.selectionStart);
+		return !textAfterCursor.includes('\n');
+	}
+
+	private moveCursorVertically(editor: HTMLTextAreaElement, direction: 'up' | 'down'): boolean {
+		const text = editor.value;
+		const pos = editor.selectionStart;
+
+		if (direction === 'up' && this.isCursorOnFirstLine(editor)) {
+			return false;
+		}
+		if (direction === 'down' && this.isCursorOnLastLine(editor)) {
+			return false;
+		}
+
+		// Find current line start and column
+		const textBefore = text.substring(0, pos);
+		const currentLineStart = textBefore.lastIndexOf('\n') + 1;
+		const currentCol = pos - currentLineStart;
+
+		let newPos: number;
+
+		if (direction === 'up') {
+			// Find the previous line
+			const prevLineEnd = currentLineStart - 1; // position of the \n before current line
+			const textBeforePrevLine = text.substring(0, prevLineEnd);
+			const prevLineStart = textBeforePrevLine.lastIndexOf('\n') + 1;
+			const prevLineLength = prevLineEnd - prevLineStart;
+			newPos = prevLineStart + Math.min(currentCol, prevLineLength);
+		} else {
+			// Find the next line
+			const currentLineEnd = text.indexOf('\n', pos);
+			const nextLineStart = currentLineEnd + 1;
+			const nextLineEnd = text.indexOf('\n', nextLineStart);
+			const nextLineLength = (nextLineEnd === -1 ? text.length : nextLineEnd) - nextLineStart;
+			newPos = nextLineStart + Math.min(currentCol, nextLineLength);
+		}
+
+		editor.setSelectionRange(newPos, newPos);
+		return true;
 	}
 
 	focusFirstEditor(): void {
