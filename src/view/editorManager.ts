@@ -41,10 +41,11 @@ export class EditorManager {
 	): Promise<void> {
 		try {
 			const content = await this.app.vault.read(file);
-			const textarea = this.buildTextarea(content);
+			const wrapper = this.buildTextarea(content);
+			const textarea = (wrapper as any).textarea as HTMLTextAreaElement;
 
 			this.editors.set(file.path, textarea);
-			container.appendChild(textarea);
+			container.appendChild(wrapper);
 
 			this.setupTextareaListeners(textarea, file, statusEl);
 			this.autoResizeTextarea(textarea);
@@ -59,12 +60,83 @@ export class EditorManager {
 		}
 	}
 
-	private buildTextarea(content: string): HTMLTextAreaElement {
+	private buildTextarea(content: string): HTMLDivElement {
 		const textarea = document.createElement('textarea');
 		textarea.className = 'daily-note-editor';
 		textarea.value = content;
 		textarea.rows = Math.max(DEFAULT_TEXTAREA_ROWS, content.split('\n').length + 2);
-		return textarea;
+
+		const wrapper = document.createElement('div');
+		wrapper.className = 'daily-note-editor-wrapper';
+		wrapper.appendChild(textarea);
+
+		const cursor = document.createElement('div');
+		cursor.className = 'custom-cursor';
+		wrapper.appendChild(cursor);
+
+		const mirror = document.createElement('div');
+		mirror.setAttribute('aria-hidden', 'true');
+		mirror.style.position = 'absolute';
+		mirror.style.visibility = 'hidden';
+		mirror.style.height = 'auto';
+		mirror.style.overflow = 'hidden';
+		mirror.style.whiteSpace = 'pre-wrap';
+		mirror.style.wordWrap = 'break-word';
+		mirror.style.top = '0';
+		mirror.style.left = '0';
+		wrapper.appendChild(mirror);
+
+		const syncMirrorStyle = (): void => {
+			const cs = window.getComputedStyle(textarea);
+			mirror.style.fontFamily = cs.fontFamily;
+			mirror.style.fontSize = cs.fontSize;
+			mirror.style.lineHeight = cs.lineHeight;
+			mirror.style.padding = cs.padding;
+			mirror.style.borderWidth = cs.borderWidth;
+			mirror.style.borderStyle = cs.borderStyle;
+			mirror.style.boxSizing = cs.boxSizing;
+			mirror.style.letterSpacing = cs.letterSpacing;
+			mirror.style.wordSpacing = cs.wordSpacing;
+			mirror.style.textIndent = cs.textIndent;
+			mirror.style.width = textarea.offsetWidth + 'px';
+		};
+
+		const updateCursor = (): void => {
+			if (document.activeElement !== textarea) {
+				cursor.style.display = 'none';
+				return;
+			}
+			syncMirrorStyle();
+			const text = textarea.value.substring(0, textarea.selectionStart);
+			mirror.textContent = '';
+			const textNode = document.createTextNode(text);
+			mirror.appendChild(textNode);
+			const marker = document.createElement('span');
+			marker.style.display = 'inline';
+			marker.textContent = '\u200B';
+			mirror.appendChild(marker);
+			const mTop = marker.offsetTop;
+			const mLeft = marker.offsetLeft;
+			const cs = window.getComputedStyle(textarea);
+			const lh = parseFloat(cs.lineHeight) || parseFloat(cs.fontSize) * 1.65;
+			cursor.style.top = mTop + 'px';
+			cursor.style.left = mLeft + 'px';
+			cursor.style.width = '0.6em';
+			cursor.style.height = lh + 'px';
+			cursor.style.display = 'block';
+			cursor.style.backgroundColor = '#18BEEC';
+		};
+
+		textarea.addEventListener('keyup', updateCursor);
+		textarea.addEventListener('click', updateCursor);
+		textarea.addEventListener('input', updateCursor);
+		textarea.addEventListener('select', updateCursor);
+		textarea.addEventListener('focus', () => { updateCursor(); });
+		textarea.addEventListener('blur', () => { cursor.style.display = 'none'; });
+		textarea.addEventListener('scroll', updateCursor);
+
+		(wrapper as any).textarea = textarea;
+		return wrapper;
 	}
 
 	private setupTextareaListeners(

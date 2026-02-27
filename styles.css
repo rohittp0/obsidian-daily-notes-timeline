@@ -192,6 +192,7 @@
 	overflow: hidden;
 	transition: border-color 0.2s, box-shadow 0.2s;
 	cursor: text;
+	caret-color: transparent !important;
 }
 
 .daily-note-editor[readonly] {
@@ -206,6 +207,26 @@
 
 .daily-note-editor::placeholder {
 	color: var(--text-faint);
+}
+
+/* Custom block cursor overlay */
+.daily-note-editor-wrapper {
+	position: relative;
+}
+
+.custom-cursor {
+	position: absolute;
+	background-color: #18BEEC;
+	opacity: 0.7;
+	pointer-events: none;
+	z-index: 10;
+	animation: cursor-blink 1s step-end infinite;
+	display: none;
+}
+
+@keyframes cursor-blink {
+	0%, 100% { opacity: 0.7; }
+	50% { opacity: 0; }
 }
 
 /* Empty State */
