@@ -121,6 +121,8 @@ export class NavigationManager {
 		editor.focus();
 		const position = placeAtStart ? 0 : editor.value.length;
 		editor.setSelectionRange(position, position);
+		editor.dispatchEvent(new Event('keyup'));
+		this.scrollCursorIntoView(editor);
 	}
 
 	private isCursorOnFirstLine(editor: HTMLTextAreaElement): boolean {
@@ -168,7 +170,19 @@ export class NavigationManager {
 		}
 
 		editor.setSelectionRange(newPos, newPos);
+		editor.dispatchEvent(new Event('keyup'));
+		this.scrollCursorIntoView(editor);
 		return true;
+	}
+
+	private scrollCursorIntoView(editor: HTMLTextAreaElement): void {
+		const wrapper = editor.closest('.daily-note-editor-wrapper');
+		const cursorEl = wrapper?.querySelector('.custom-cursor');
+		if (cursorEl) {
+			cursorEl.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+		} else {
+			editor.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+		}
 	}
 
 	focusFirstEditor(): void {
