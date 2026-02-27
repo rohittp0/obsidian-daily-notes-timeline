@@ -83,8 +83,7 @@
 }
 
 .daily-note-item:focus-within {
-	border-color: var(--interactive-accent);
-	box-shadow: 0 0 0 2px var(--interactive-accent-hover);
+	border-left: 3px solid var(--text-normal);
 }
 
 /* Note Header */
