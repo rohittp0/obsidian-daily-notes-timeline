@@ -3,6 +3,64 @@ import { DEFAULT_TEXTAREA_ROWS, SAVE_INDICATOR_DURATION } from '../types';
 import type { DailyNotesViewerSettings } from '../types';
 import type { VimModeManager } from './vimMode';
 
+/** Manages a single cursor overlay for a textarea */
+class CursorOverlay {
+	private rafId: number | null = null;
+	private lastSelectionStart = -1;
+	private lastCursorClass = '';
+
+	constructor(
+		private textarea: HTMLTextAreaElement,
+		private cursor: HTMLElement,
+		private doUpdate: () => void
+	) {}
+
+	scheduleUpdate(): void {
+		if (this.rafId !== null) return;
+		this.rafId = requestAnimationFrame(() => {
+			this.rafId = null;
+			this.doUpdate();
+		});
+	}
+
+	/** Reset cached state so next scheduleUpdate always runs */
+	invalidate(): void {
+		this.lastSelectionStart = -1;
+		this.lastCursorClass = '';
+	}
+
+	/** Check if position+mode changed; returns true if update is needed */
+	checkChanged(cursorPos: number, cursorClass: string): boolean {
+		if (cursorPos === this.lastSelectionStart &&
+			cursorClass === this.lastCursorClass &&
+			this.cursor.style.display !== 'none') {
+			return false;
+		}
+		this.lastSelectionStart = cursorPos;
+		this.lastCursorClass = cursorClass;
+		return true;
+	}
+
+	destroy(): void {
+		if (this.rafId !== null) {
+			cancelAnimationFrame(this.rafId);
+			this.rafId = null;
+		}
+	}
+}
+
+/** Module-level overlay map — accessible to navigation for direct cursor updates */
+const cursorOverlays: WeakMap<HTMLTextAreaElement, CursorOverlay> = new WeakMap();
+
+/** Schedule a cursor overlay update for a textarea (direct call, no synthetic events) */
+export function scheduleCursorUpdate(textarea: HTMLTextAreaElement): void {
+	const overlay = cursorOverlays.get(textarea);
+	if (overlay) {
+		overlay.invalidate(); // Force update since caller explicitly requests it
+		overlay.scheduleUpdate();
+	}
+}
+
 export class EditorManager {
 	private app: App;
 	private settings: DailyNotesViewerSettings;
@@ -88,6 +146,13 @@ export class EditorManager {
 		mirror.style.wordWrap = 'break-word';
 		mirror.style.top = '0';
 		mirror.style.left = '0';
+		// Persistent mirror DOM nodes — reused every cursor update (no create/destroy)
+		const textNode = document.createTextNode('');
+		mirror.appendChild(textNode);
+		const marker = document.createElement('span');
+		marker.style.display = 'inline';
+		marker.textContent = '\u200B';
+		mirror.appendChild(marker);
 		wrapper.appendChild(mirror);
 
 		let cachedWidth = 0;
@@ -121,13 +186,8 @@ export class EditorManager {
 			}
 			syncMirrorStyle();
 			const text = textarea.value.substring(0, textarea.selectionStart);
-			mirror.textContent = '';
-			const textNode = document.createTextNode(text);
-			mirror.appendChild(textNode);
-			const marker = document.createElement('span');
-			marker.style.display = 'inline';
-			marker.textContent = '\u200B';
-			mirror.appendChild(marker);
+			// Reuse persistent textNode — single property write, no DOM tree mutation
+			textNode.data = text;
 			const mTop = marker.offsetTop;
 			const mLeft = marker.offsetLeft;
 			const cs = cachedStyles || window.getComputedStyle(textarea);
@@ -147,13 +207,18 @@ export class EditorManager {
 			}
 		};
 
-		let rafId: number | null = null;
+		// Create CursorOverlay for this textarea and register in module-level WeakMap
+		const overlay = new CursorOverlay(textarea, cursor, updateCursor);
+		cursorOverlays.set(textarea, overlay);
+
 		const scheduleUpdateCursor = (): void => {
-			if (rafId !== null) return;
-			rafId = requestAnimationFrame(() => {
-				rafId = null;
-				updateCursor();
-			});
+			// Skip if cursor position and vim mode class are unchanged
+			const curPos = textarea.selectionStart;
+			const curClass = self.vimModeManager?.getCurrentMode() === 'insert' ? 'insert' : 'command';
+			if (!overlay.checkChanged(curPos, curClass)) {
+				return;
+			}
+			overlay.scheduleUpdate();
 		};
 
 		textarea.addEventListener('keyup', scheduleUpdateCursor);

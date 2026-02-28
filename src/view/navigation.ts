@@ -1,15 +1,32 @@
 import type { VimModeManager } from './vimMode';
 import type { DailyNotesViewerSettings } from '../types';
+import { scheduleCursorUpdate } from './editorManager';
+
+interface ScrollContext {
+	scrollContainer: HTMLElement;
+	noteItem: HTMLElement;
+	wrapper: HTMLElement;
+	cursor: HTMLElement;
+}
 
 export class NavigationManager {
 	private editors: Map<string, HTMLTextAreaElement>;
 	private editorsCache: HTMLTextAreaElement[] | null = null;
+	private editorIndexMap: Map<HTMLTextAreaElement, number> | null = null;
+	private cacheGeneration = -1;
+	private currentGeneration = 0;
 	private vimModeManager?: VimModeManager;
 	private settings?: DailyNotesViewerSettings;
 	private scrollRafId: number | null = null;
+	private scrollContextCache: WeakMap<HTMLTextAreaElement, ScrollContext> = new WeakMap();
 
 	constructor(editors: Map<string, HTMLTextAreaElement>) {
 		this.editors = editors;
+	}
+
+	/** Call when the editors map has been mutated (add/remove/clear) */
+	invalidateCache(): void {
+		this.currentGeneration++;
 	}
 
 	setVimModeManager(vimModeManager: VimModeManager): void {
@@ -32,10 +49,20 @@ export class NavigationManager {
 	}
 
 	private getEditorsArray(): HTMLTextAreaElement[] {
-		if (!this.editorsCache || this.editorsCache.length !== this.editors.size) {
+		if (!this.editorsCache || this.cacheGeneration !== this.currentGeneration) {
 			this.editorsCache = Array.from(this.editors.values());
+			this.editorIndexMap = new Map();
+			for (let i = 0; i < this.editorsCache.length; i++) {
+				this.editorIndexMap.set(this.editorsCache[i], i);
+			}
+			this.cacheGeneration = this.currentGeneration;
 		}
 		return this.editorsCache;
+	}
+
+	private getEditorIndex(editor: HTMLTextAreaElement): number {
+		this.getEditorsArray(); // ensure cache is fresh
+		return this.editorIndexMap?.get(editor) ?? -1;
 	}
 
 	private handleNavigationKey(e: KeyboardEvent, currentEditor: HTMLTextAreaElement): void {
@@ -45,7 +72,7 @@ export class NavigationManager {
 		}
 
 		const editorsArray = this.getEditorsArray();
-		const currentIndex = editorsArray.indexOf(currentEditor);
+		const currentIndex = this.getEditorIndex(currentEditor);
 
 		if (currentIndex === -1) return;
 
@@ -130,7 +157,8 @@ export class NavigationManager {
 		editor.focus();
 		const position = placeAtStart ? 0 : editor.value.length;
 		editor.setSelectionRange(position, position);
-		editor.dispatchEvent(new Event('keyup'));
+		// Direct cursor overlay update — no synthetic events
+		scheduleCursorUpdate(editor);
 		this.scheduleScrollCursorIntoView(editor);
 	}
 
@@ -162,7 +190,8 @@ export class NavigationManager {
 			editor.setSelectionRange(newPos, newPos);
 		}
 
-		editor.dispatchEvent(new Event('keyup'));
+		// Direct cursor overlay update — no synthetic events, internally coalesced via RAF
+		scheduleCursorUpdate(editor);
 		this.scheduleScrollCursorIntoView(editor);
 		return true;
 	}
@@ -177,21 +206,35 @@ export class NavigationManager {
 		});
 	}
 
-	private scrollCursorIntoView(editor: HTMLTextAreaElement): void {
+	/** Populate scroll context cache for an editor (called once, results reused) */
+	cacheScrollContext(editor: HTMLTextAreaElement): void {
+		if (this.scrollContextCache.has(editor)) return;
 		const scrollContainer = editor.closest('.daily-notes-viewer') as HTMLElement;
-		if (!scrollContainer) return;
+		const noteItem = editor.closest('.daily-note-item') as HTMLElement;
+		const wrapper = editor.closest('.daily-note-editor-wrapper') as HTMLElement;
+		const cursor = wrapper?.querySelector('.custom-cursor') as HTMLElement;
+		if (scrollContainer && noteItem && wrapper && cursor) {
+			this.scrollContextCache.set(editor, { scrollContainer, noteItem, wrapper, cursor });
+		}
+	}
+
+	private scrollCursorIntoView(editor: HTMLTextAreaElement): void {
+		// Use cached DOM references — avoids 4 tree walks per cursor move
+		let ctx = this.scrollContextCache.get(editor);
+		if (!ctx) {
+			this.cacheScrollContext(editor);
+			ctx = this.scrollContextCache.get(editor);
+		}
+		if (!ctx) return;
+
+		const { scrollContainer, noteItem } = ctx;
 
 		// Determine the target element to keep in view
-		let target: Element | null = null;
-		const noteItem = editor.closest('.daily-note-item');
-
+		let target: Element;
 		if (editor.selectionStart === 0 && noteItem) {
-			// At start of note — target the whole note item (shows date heading)
 			target = noteItem;
 		} else {
-			// Mid-note — target the custom cursor overlay
-			const wrapper = editor.closest('.daily-note-editor-wrapper');
-			target = wrapper?.querySelector('.custom-cursor') || editor;
+			target = ctx.cursor || editor;
 		}
 
 		// Account for sticky header height at the top

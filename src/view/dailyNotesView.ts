@@ -66,10 +66,12 @@ export class DailyNotesView extends ItemView {
 	}
 
 	private cleanup(): void {
+		this.vimModeManager.cleanup();
 		this.navigationManager.destroy();
 		const { contentEl } = this;
 		contentEl.empty();
 		this.editors.clear();
+		this.navigationManager.invalidateCache();
 		this.saveTimeouts.clear();
 	}
 
@@ -82,6 +84,7 @@ export class DailyNotesView extends ItemView {
 		contentEl.empty();
 		contentEl.addClass('daily-notes-viewer');
 		this.editors.clear();
+		this.navigationManager.invalidateCache();
 		this.editorManager.clearVirtualState();
 
 		// Compute today state

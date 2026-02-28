@@ -2,11 +2,57 @@ import type { VimMode } from '../types';
 
 type PendingOperator = 'd' | 'y' | 'c';
 
+/** Fixed-size circular buffer — O(1) push, O(1) pop, O(1) eviction */
+class CircularBuffer<T> {
+	private buffer: (T | undefined)[];
+	private head = 0;
+	private count = 0;
+	private readonly capacity: number;
+
+	constructor(capacity: number) {
+		this.capacity = capacity;
+		this.buffer = new Array(capacity);
+	}
+
+	push(item: T): void {
+		const idx = (this.head + this.count) % this.capacity;
+		if (this.count === this.capacity) {
+			// Overwrite oldest — advance head
+			this.buffer[idx] = item;
+			this.head = (this.head + 1) % this.capacity;
+		} else {
+			this.buffer[idx] = item;
+			this.count++;
+		}
+	}
+
+	pop(): T | undefined {
+		if (this.count === 0) return undefined;
+		this.count--;
+		const idx = (this.head + this.count) % this.capacity;
+		const item = this.buffer[idx];
+		this.buffer[idx] = undefined;
+		return item;
+	}
+
+	get length(): number { return this.count; }
+
+	clear(): void {
+		this.buffer = new Array(this.capacity);
+		this.head = 0;
+		this.count = 0;
+	}
+}
+
 export class VimModeManager {
 	private currentMode: VimMode = 'command';
 	private editors: Map<string, HTMLTextAreaElement>;
 	private modeIndicators: Map<string, HTMLElement> = new Map();
 	private enabled: boolean;
+
+	// Focused editor tracking for O(1) mode switch updates
+	private focusedEditor: HTMLTextAreaElement | null = null;
+	private focusedEditorPath: string | null = null;
 
 	// Operator-pending state
 	private pendingOperator: PendingOperator | null = null;
@@ -15,13 +61,22 @@ export class VimModeManager {
 	// Vim register (shared across all editors, session-only)
 	private register: string = '';
 
-	// Per-editor undo stacks
-	private undoStacks: Map<HTMLTextAreaElement, Array<{ value: string; cursor: number }>> = new Map();
+	// Per-editor undo stacks (circular buffer for O(1) push/eviction)
+	private undoStacks: Map<HTMLTextAreaElement, CircularBuffer<{ value: string; cursor: number }>> = new Map();
 	private static readonly MAX_UNDO = 50;
 
 	constructor(editors: Map<string, HTMLTextAreaElement>, enabled: boolean) {
 		this.editors = editors;
 		this.enabled = enabled;
+	}
+
+	/** Clear all state for re-render — prevents stale DOM refs and memory leaks */
+	cleanup(): void {
+		this.modeIndicators.clear();
+		this.undoStacks.clear();
+		this.focusedEditor = null;
+		this.focusedEditorPath = null;
+		this.clearPending();
 	}
 
 	setEnabled(enabled: boolean): void {
@@ -44,8 +99,18 @@ export class VimModeManager {
 
 	setMode(mode: VimMode): void {
 		this.currentMode = mode;
-		this.updateAllEditors();
-		this.updateAllIndicators();
+		// Only update the focused editor — others sync lazily on focus
+		if (this.focusedEditor) {
+			this.updateEditorState(this.focusedEditor);
+		}
+		if (this.focusedEditorPath) {
+			const indicator = this.modeIndicators.get(this.focusedEditorPath);
+			if (indicator) this.updateIndicator(indicator);
+		} else {
+			// Fallback: no focused editor tracked, update all
+			this.updateAllEditors();
+			this.updateAllIndicators();
+		}
 	}
 
 	registerModeIndicator(editorPath: string, indicator: HTMLElement): void {
@@ -64,7 +129,17 @@ export class VimModeManager {
 		});
 
 		editor.addEventListener('focus', () => {
+			this.focusedEditor = editor;
+			// Resolve path for this editor to track focused indicator
+			for (const [path, ed] of this.editors) {
+				if (ed === editor) { this.focusedEditorPath = path; break; }
+			}
 			this.updateEditorState(editor);
+			// Sync indicator for this editor (lazy catch-up for stale indicators)
+			if (this.focusedEditorPath) {
+				const indicator = this.modeIndicators.get(this.focusedEditorPath);
+				if (indicator) this.updateIndicator(indicator);
+			}
 		});
 
 		editor.addEventListener('blur', () => {
@@ -79,13 +154,22 @@ export class VimModeManager {
 	private enterPending(op: PendingOperator, editor: HTMLTextAreaElement): void {
 		this.pendingOperator = op;
 		this.pendingEditor = editor;
-		this.updateAllIndicators();
+		this.updateFocusedIndicator();
 	}
 
 	private clearPending(): void {
 		if (this.pendingOperator !== null) {
 			this.pendingOperator = null;
 			this.pendingEditor = null;
+			this.updateFocusedIndicator();
+		}
+	}
+
+	private updateFocusedIndicator(): void {
+		if (this.focusedEditorPath) {
+			const indicator = this.modeIndicators.get(this.focusedEditorPath);
+			if (indicator) this.updateIndicator(indicator);
+		} else {
 			this.updateAllIndicators();
 		}
 	}
@@ -102,8 +186,9 @@ export class VimModeManager {
 	}
 
 	private dispatchMutationEvents(editor: HTMLTextAreaElement): void {
+		// Only dispatch 'input' — needed for auto-save and textarea resize.
+		// Cursor overlay updates are triggered by 'input' listener already.
 		editor.dispatchEvent(new Event('input', { bubbles: true }));
-		editor.dispatchEvent(new Event('keyup', { bubbles: true }));
 	}
 
 	// --- Undo ---
@@ -111,20 +196,18 @@ export class VimModeManager {
 	private pushUndo(editor: HTMLTextAreaElement): void {
 		let stack = this.undoStacks.get(editor);
 		if (!stack) {
-			stack = [];
+			stack = new CircularBuffer(VimModeManager.MAX_UNDO);
 			this.undoStacks.set(editor, stack);
 		}
 		stack.push({ value: editor.value, cursor: editor.selectionStart });
-		if (stack.length > VimModeManager.MAX_UNDO) {
-			stack.shift();
-		}
 	}
 
 	private undo(editor: HTMLTextAreaElement): void {
 		const stack = this.undoStacks.get(editor);
 		if (!stack || stack.length === 0) return;
 
-		const entry = stack.pop()!;
+		const entry = stack.pop();
+		if (!entry) return;
 		editor.value = entry.value;
 		editor.setSelectionRange(entry.cursor, entry.cursor);
 		this.dispatchMutationEvents(editor);
@@ -166,8 +249,7 @@ export class VimModeManager {
 	private yankLine(editor: HTMLTextAreaElement): void {
 		const { lineText } = this.getCurrentLineRange(editor);
 		this.register = lineText + '\n';
-		// No text mutation, just update cursor overlay
-		editor.dispatchEvent(new Event('keyup', { bubbles: true }));
+		// No text mutation, no cursor position change — nothing to update
 	}
 
 	private changeLine(editor: HTMLTextAreaElement): void {
