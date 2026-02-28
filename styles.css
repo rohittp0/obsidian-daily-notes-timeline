@@ -93,6 +93,10 @@
 	margin-bottom: 12px;
 	padding-bottom: 10px;
 	border-bottom: 1px solid var(--background-modifier-border);
+	position: sticky;
+	top: -1px;
+	z-index: 15;
+	background-color: var(--background-primary);
 }
 
 .daily-note-date {
@@ -272,10 +276,6 @@
 	}
 }
 
-/* Smooth scrolling */
-.daily-notes-viewer {
-	scroll-behavior: smooth;
-}
 
 /* Highlight current focused note */
 .daily-note-item:has(.daily-note-editor:focus) {

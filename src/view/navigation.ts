@@ -6,6 +6,7 @@ export class NavigationManager {
 	private editorsCache: HTMLTextAreaElement[] | null = null;
 	private vimModeManager?: VimModeManager;
 	private settings?: DailyNotesViewerSettings;
+	private scrollRafId: number | null = null;
 
 	constructor(editors: Map<string, HTMLTextAreaElement>) {
 		this.editors = editors;
@@ -130,7 +131,7 @@ export class NavigationManager {
 		const position = placeAtStart ? 0 : editor.value.length;
 		editor.setSelectionRange(position, position);
 		editor.dispatchEvent(new Event('keyup'));
-		this.scrollCursorIntoView(editor);
+		this.scheduleScrollCursorIntoView(editor);
 	}
 
 	private moveCursorVertically(editor: HTMLTextAreaElement, direction: 'up' | 'down'): boolean {
@@ -162,26 +163,58 @@ export class NavigationManager {
 		}
 
 		editor.dispatchEvent(new Event('keyup'));
-		this.scrollCursorIntoView(editor);
+		this.scheduleScrollCursorIntoView(editor);
 		return true;
 	}
 
-	private scrollCursorIntoView(editor: HTMLTextAreaElement): void {
-		const noteItem = editor.closest('.daily-note-item');
-		if (noteItem) {
-			const cursorPos = editor.selectionStart;
-			if (cursorPos === 0) {
-				// Navigating to start of note — show the date heading too
-				noteItem.scrollIntoView({ block: 'nearest', behavior: 'auto' });
-				return;
-			}
+	private scheduleScrollCursorIntoView(editor: HTMLTextAreaElement): void {
+		if (this.scrollRafId !== null) {
+			cancelAnimationFrame(this.scrollRafId);
 		}
-		const wrapper = editor.closest('.daily-note-editor-wrapper');
-		const cursorEl = wrapper?.querySelector('.custom-cursor');
-		if (cursorEl) {
-			cursorEl.scrollIntoView({ block: 'nearest', behavior: 'auto' });
+		this.scrollRafId = requestAnimationFrame(() => {
+			this.scrollRafId = null;
+			this.scrollCursorIntoView(editor);
+		});
+	}
+
+	private scrollCursorIntoView(editor: HTMLTextAreaElement): void {
+		const scrollContainer = editor.closest('.daily-notes-viewer') as HTMLElement;
+		if (!scrollContainer) return;
+
+		// Determine the target element to keep in view
+		let target: Element | null = null;
+		const noteItem = editor.closest('.daily-note-item');
+
+		if (editor.selectionStart === 0 && noteItem) {
+			// At start of note — target the whole note item (shows date heading)
+			target = noteItem;
 		} else {
-			editor.scrollIntoView({ block: 'nearest', behavior: 'auto' });
+			// Mid-note — target the custom cursor overlay
+			const wrapper = editor.closest('.daily-note-editor-wrapper');
+			target = wrapper?.querySelector('.custom-cursor') || editor;
+		}
+
+		// Account for sticky header height at the top
+		const stickyHeader = noteItem?.querySelector('.daily-note-header') as HTMLElement | null;
+		const stickyHeight = stickyHeader ? stickyHeader.offsetHeight : 0;
+		const topBuffer = Math.max(40, stickyHeight + 8);
+		const bottomBuffer = 40;
+		const containerRect = scrollContainer.getBoundingClientRect();
+		const targetRect = target.getBoundingClientRect();
+
+		if (targetRect.top < containerRect.top + topBuffer) {
+			// Target is above visible area (or behind sticky header)
+			scrollContainer.scrollTop -= (containerRect.top + topBuffer - targetRect.top);
+		} else if (targetRect.bottom > containerRect.bottom - bottomBuffer) {
+			// Target is below visible area
+			scrollContainer.scrollTop += (targetRect.bottom - containerRect.bottom + bottomBuffer);
+		}
+	}
+
+	destroy(): void {
+		if (this.scrollRafId !== null) {
+			cancelAnimationFrame(this.scrollRafId);
+			this.scrollRafId = null;
 		}
 	}
 

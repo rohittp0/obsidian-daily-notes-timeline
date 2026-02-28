@@ -66,6 +66,7 @@ export class DailyNotesView extends ItemView {
 	}
 
 	private cleanup(): void {
+		this.navigationManager.destroy();
 		const { contentEl } = this;
 		contentEl.empty();
 		this.editors.clear();
