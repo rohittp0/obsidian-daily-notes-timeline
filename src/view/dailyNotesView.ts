@@ -58,6 +58,15 @@ export class DailyNotesView extends ItemView {
 		await this.loadDailyNotes();
 		await this.render();
 		this.navigationManager.setupKeyboardNavigation(this.contentEl);
+
+		// Restore cursor focus when switching back to this tab
+		this.registerEvent(
+			this.app.workspace.on('active-leaf-change', (leaf) => {
+				if (leaf === this.leaf) {
+					this.navigationManager.restoreLastFocus();
+				}
+			})
+		);
 	}
 
 	async onClose(): Promise<void> {
@@ -131,7 +140,7 @@ export class DailyNotesView extends ItemView {
 			await this.renderer.renderAllNotes(notesContainer, this.dailyNotes);
 		}
 
-		this.navigationManager.focusFirstEditor();
+		this.navigationManager.restoreLastFocus();
 	}
 
 	private async handleRefresh(): Promise<void> {

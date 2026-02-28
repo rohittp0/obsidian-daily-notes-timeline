@@ -19,6 +19,8 @@ export class NavigationManager {
 	private settings?: DailyNotesViewerSettings;
 	private scrollRafId: number | null = null;
 	private scrollContextCache: WeakMap<HTMLTextAreaElement, ScrollContext> = new WeakMap();
+	private lastFocusedPath: string | null = null;
+	private lastCursorPos = 0;
 
 	constructor(editors: Map<string, HTMLTextAreaElement>) {
 		this.editors = editors;
@@ -46,6 +48,42 @@ export class NavigationManager {
 
 			this.handleNavigationKey(e, target);
 		});
+
+		// Track last-focused editor via event delegation
+		container.addEventListener('focusin', (e: FocusEvent) => {
+			const target = e.target;
+			if (!(target instanceof HTMLTextAreaElement)) return;
+			// Reverse-lookup path from editors Map
+			for (const [path, editor] of this.editors) {
+				if (editor === target) {
+					this.lastFocusedPath = path;
+					break;
+				}
+			}
+		});
+
+		container.addEventListener('focusout', (e: FocusEvent) => {
+			const target = e.target;
+			if (!(target instanceof HTMLTextAreaElement)) return;
+			this.lastCursorPos = target.selectionStart;
+		});
+	}
+
+	/** Restore focus to the last-focused editor and cursor position */
+	restoreLastFocus(): void {
+		if (!this.lastFocusedPath) {
+			this.focusFirstEditor();
+			return;
+		}
+		const textarea = this.editors.get(this.lastFocusedPath);
+		if (!textarea) {
+			this.focusFirstEditor();
+			return;
+		}
+		textarea.focus();
+		const pos = Math.min(this.lastCursorPos, textarea.value.length);
+		textarea.setSelectionRange(pos, pos);
+		scheduleCursorUpdate(textarea);
 	}
 
 	private getEditorsArray(): HTMLTextAreaElement[] {
