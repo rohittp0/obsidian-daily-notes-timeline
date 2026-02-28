@@ -52,7 +52,7 @@ export default class DailyNotesViewerPlugin extends Plugin {
 		const leaves = this.app.workspace.getLeavesOfType(VIEW_TYPE_DAILY_NOTES);
 		if (leaves.length > 0) {
 			const view = leaves[0].view as DailyNotesView;
-			view.loadDailyNotes();
+			await view.loadDailyNotes();
 			await view.render();
 			new Notice('Daily notes refreshed');
 		} else {

@@ -54,7 +54,7 @@ export class DailyNotesView extends ItemView {
 	}
 
 	async onOpen(): Promise<void> {
-		this.loadDailyNotes();
+		await this.loadDailyNotes();
 		await this.render();
 		this.navigationManager.setupKeyboardNavigation(this.contentEl);
 	}
@@ -71,8 +71,8 @@ export class DailyNotesView extends ItemView {
 		this.saveTimeouts.clear();
 	}
 
-	loadDailyNotes(): void {
-		this.dailyNotes = this.fileManager.loadDailyNotes(this.plugin.settings);
+	async loadDailyNotes(): Promise<void> {
+		this.dailyNotes = await this.fileManager.loadDailyNotesFilteringEmpty(this.plugin.settings);
 	}
 
 	async render(): Promise<void> {
@@ -80,16 +80,23 @@ export class DailyNotesView extends ItemView {
 		contentEl.empty();
 		contentEl.addClass('daily-notes-viewer');
 		this.editors.clear();
+		this.editorManager.clearVirtualState();
+
+		// Compute today state
+		const todayStr = this.fileManager.getTodayDateStr();
+		const todayPath = this.fileManager.getTodayPath(this.plugin.settings);
+		const todayExists = this.dailyNotes.some(f => f.basename === todayStr);
+		const noteCount = this.dailyNotes.length + (todayExists ? 0 : 1);
 
 		// Update managers with latest settings
 		this.vimModeManager.setEnabled(this.plugin.settings.vimModeEnabled);
 		this.navigationManager.updateSettings(this.plugin.settings);
 		this.editorManager.updateSettings(this.plugin.settings);
 
-		// Render header
+		// Render header (with correct count including virtual)
 		this.renderer.renderHeader(
 			contentEl,
-			this.dailyNotes.length,
+			noteCount,
 			() => void this.handleRefresh()
 		);
 
@@ -103,17 +110,27 @@ export class DailyNotesView extends ItemView {
 		// Render notes
 		const notesContainer = contentEl.createDiv('daily-notes-container');
 
-		if (this.dailyNotes.length === 0) {
+		if (!todayExists) {
+			const isNewest = this.plugin.settings.sortOrder === 'newest';
+			if (isNewest) {
+				await this.renderer.renderVirtualNote(notesContainer, todayStr, todayPath);
+				await this.renderer.renderAllNotes(notesContainer, this.dailyNotes);
+			} else {
+				await this.renderer.renderAllNotes(notesContainer, this.dailyNotes);
+				await this.renderer.renderVirtualNote(notesContainer, todayStr, todayPath);
+			}
+		} else if (this.dailyNotes.length === 0) {
 			this.renderer.renderEmptyState(notesContainer);
-			return;
+		} else {
+			await this.renderer.renderAllNotes(notesContainer, this.dailyNotes);
 		}
 
-		await this.renderer.renderAllNotes(notesContainer, this.dailyNotes);
 		this.navigationManager.focusFirstEditor();
 	}
 
 	private async handleRefresh(): Promise<void> {
-		this.loadDailyNotes();
+		await this.editorManager.saveAllPendingChanges(this.dailyNotes);
+		await this.loadDailyNotes();
 		await this.render();
 	}
 }

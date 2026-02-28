@@ -62,6 +62,25 @@ export class Renderer {
 		});
 	}
 
+	async renderVirtualNote(
+		container: HTMLElement,
+		dateStr: string,
+		expectedPath: string
+	): Promise<void> {
+		const noteEl = container.createDiv('daily-note-item');
+		noteEl.setAttribute('data-note-path', expectedPath);
+
+		const noteHeader = noteEl.createDiv('daily-note-header');
+		noteHeader.createEl('h3', { text: dateStr, cls: 'daily-note-date' });
+
+		const actionsEl = noteHeader.createDiv('daily-note-actions');
+		const modeIndicator = this.renderModeIndicator(actionsEl);
+		const statusEl = this.renderStatusIndicator(actionsEl);
+
+		const contentDiv = noteEl.createDiv('daily-note-content');
+		await this.editorManager.createVirtualEditor(contentDiv, expectedPath, statusEl, modeIndicator);
+	}
+
 	async renderAllNotes(container: HTMLElement, files: TFile[]): Promise<void> {
 		for (const file of files) {
 			await this.renderDailyNote(container, file);

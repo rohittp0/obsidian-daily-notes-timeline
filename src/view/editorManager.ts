@@ -9,6 +9,9 @@ export class EditorManager {
 	private editors: Map<string, HTMLTextAreaElement>;
 	private readonly saveTimeouts: Map<string, number>;
 	private vimModeManager?: VimModeManager;
+	private virtualPaths: Set<string> = new Set();
+	private materializedFiles: Map<string, TFile> = new Map();
+	private creatingFile: Map<string, Promise<TFile>> = new Map();
 
 	constructor(
 		app: App,
@@ -223,14 +226,125 @@ export class EditorManager {
 		}
 	}
 
+	async createVirtualEditor(
+		container: HTMLElement,
+		expectedPath: string,
+		statusEl: HTMLElement,
+		modeIndicator: HTMLElement
+	): Promise<void> {
+		const wrapper = this.buildTextarea('');
+		const textarea = (wrapper as any).textarea as HTMLTextAreaElement;
+
+		this.editors.set(expectedPath, textarea);
+		this.virtualPaths.add(expectedPath);
+		container.appendChild(wrapper);
+
+		this.setupVirtualTextareaListeners(textarea, expectedPath, statusEl);
+		this.autoResizeTextarea(textarea);
+
+		if (this.vimModeManager) {
+			this.vimModeManager.setupVimModeForEditor(textarea);
+			this.vimModeManager.registerModeIndicator(expectedPath, modeIndicator);
+		}
+	}
+
+	private setupVirtualTextareaListeners(
+		textarea: HTMLTextAreaElement,
+		expectedPath: string,
+		statusEl: HTMLElement
+	): void {
+		textarea.addEventListener('input', () => {
+			this.scheduleVirtualAutoSave(expectedPath, textarea, statusEl);
+			this.autoResizeTextarea(textarea);
+		});
+	}
+
+	private scheduleVirtualAutoSave(
+		path: string,
+		textarea: HTMLTextAreaElement,
+		statusEl: HTMLElement
+	): void {
+		if (!this.settings.autoSave) return;
+		this.clearExistingTimeout(path);
+		this.showUnsavedIndicator(statusEl);
+		const timeout = window.setTimeout(() => {
+			void this.performVirtualSave(path, textarea.value, statusEl);
+		}, this.settings.autoSaveDelay);
+		this.saveTimeouts.set(path, timeout);
+	}
+
+	private async performVirtualSave(
+		path: string,
+		content: string,
+		statusEl: HTMLElement
+	): Promise<void> {
+		if (content.trim().length === 0) {
+			this.saveTimeouts.delete(path);
+			statusEl.textContent = '';
+			statusEl.removeClass('status-unsaved');
+			return;
+		}
+
+		try {
+			const file = await this.ensureFileExists(path, content);
+			if (!this.virtualPaths.has(path)) {
+				await this.app.vault.modify(file, content);
+			}
+			this.showSavedIndicator(statusEl);
+		} catch (error) {
+			new Notice(`Error saving: ${(error as Error).message}`);
+		}
+		this.saveTimeouts.delete(path);
+	}
+
+	private async ensureFileExists(path: string, content: string): Promise<TFile> {
+		const existing = this.materializedFiles.get(path);
+		if (existing) return existing;
+
+		const inflight = this.creatingFile.get(path);
+		if (inflight) return inflight;
+
+		const createPromise = (async () => {
+			const folder = path.substring(0, path.lastIndexOf('/'));
+			if (folder && !this.app.vault.getAbstractFileByPath(folder)) {
+				await this.app.vault.createFolder(folder);
+			}
+			const file = await this.app.vault.create(path, content);
+			this.materializedFiles.set(path, file);
+			this.virtualPaths.delete(path);
+			this.creatingFile.delete(path);
+			return file;
+		})();
+
+		this.creatingFile.set(path, createPromise);
+		return createPromise;
+	}
+
+	clearVirtualState(): void {
+		this.virtualPaths.clear();
+		this.materializedFiles.clear();
+		this.creatingFile.clear();
+	}
+
 	async saveAllPendingChanges(dailyNotes: TFile[]): Promise<void> {
-		for (const [path, timeout] of this.saveTimeouts) {
+		for (const [, timeout] of this.saveTimeouts) {
 			clearTimeout(timeout);
-			const editor = this.editors.get(path);
-			if (editor) {
-				const file = dailyNotes.find(f => f.path === path);
+		}
+		this.saveTimeouts.clear();
+
+		for (const [path, editor] of this.editors) {
+			const content = editor.value;
+			if (content.trim().length === 0) continue;
+
+			if (this.virtualPaths.has(path) || this.creatingFile.has(path)) {
+				try {
+					await this.ensureFileExists(path, content);
+				} catch { /* best effort */ }
+			} else {
+				const file = this.materializedFiles.get(path)
+					?? dailyNotes.find(f => f.path === path);
 				if (file) {
-					await this.saveNote(file, editor.value);
+					await this.saveNote(file, content);
 				}
 			}
 		}
