@@ -1,13 +1,24 @@
 import { App, TFile, Notice } from 'obsidian';
 import { EditorManager } from './editorManager';
+import { type DisplayDateFormat, DATE_FORMAT_OPTIONS } from '../types';
 
 export class Renderer {
 	private app: App;
 	private editorManager: EditorManager;
+	displayDateFormat: DisplayDateFormat = 'full';
 
 	constructor(app: App, editorManager: EditorManager) {
 		this.app = app;
 		this.editorManager = editorManager;
+	}
+
+	formatDateStr(dateStr: string): string {
+		if (this.displayDateFormat === 'iso') return dateStr;
+		const opts = DATE_FORMAT_OPTIONS[this.displayDateFormat];
+		if (!opts) return dateStr;
+		const date = new Date(dateStr + 'T00:00:00');
+		if (isNaN(date.getTime())) return dateStr;
+		return new Intl.DateTimeFormat(undefined, opts).format(date);
 	}
 
 	renderHeader(container: HTMLElement, notesCount: number, onRefresh: () => void): void {
@@ -71,7 +82,7 @@ export class Renderer {
 		noteEl.setAttribute('data-note-path', expectedPath);
 
 		const noteHeader = noteEl.createDiv('daily-note-header');
-		noteHeader.createEl('h3', { text: dateStr, cls: 'daily-note-date' });
+		noteHeader.createEl('h3', { text: this.formatDateStr(dateStr), cls: 'daily-note-date' });
 
 		const actionsEl = noteHeader.createDiv('daily-note-actions');
 		const modeIndicator = this.renderModeIndicator(actionsEl);
@@ -106,7 +117,7 @@ export class Renderer {
 	private renderNoteDate(container: HTMLElement, file: TFile): void {
 		const dateLink = container.createEl('h3', { cls: 'daily-note-date' });
 		const link = dateLink.createEl('a', {
-			text: file.basename,
+			text: this.formatDateStr(file.basename),
 			cls: 'internal-link'
 		});
 		link.addEventListener('click', (e) => {

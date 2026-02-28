@@ -34,6 +34,7 @@ export class DailyNotesView extends ItemView {
 			this.saveTimeouts
 		);
 		this.renderer = new Renderer(this.app, this.editorManager);
+		this.renderer.displayDateFormat = this.plugin.settings.displayDateFormat;
 
 		// Connect managers
 		this.navigationManager.setVimModeManager(this.vimModeManager);
@@ -92,6 +93,7 @@ export class DailyNotesView extends ItemView {
 		this.vimModeManager.setEnabled(this.plugin.settings.vimModeEnabled);
 		this.navigationManager.updateSettings(this.plugin.settings);
 		this.editorManager.updateSettings(this.plugin.settings);
+		this.renderer.displayDateFormat = this.plugin.settings.displayDateFormat;
 
 		// Render header (with correct count including virtual)
 		this.renderer.renderHeader(

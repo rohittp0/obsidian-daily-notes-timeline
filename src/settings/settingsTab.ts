@@ -1,5 +1,6 @@
 import { App, PluginSettingTab, Setting } from 'obsidian';
 import type DailyNotesViewerPlugin from '../main';
+import { type DisplayDateFormat, DATE_FORMAT_LABELS, DATE_FORMAT_OPTIONS } from '../types';
 
 export class DailyNotesViewerSettingTab extends PluginSettingTab {
 	plugin: DailyNotesViewerPlugin;
@@ -37,12 +38,28 @@ export class DailyNotesViewerSettingTab extends PluginSettingTab {
 	}
 
 	private addDateFormatSetting(containerEl: HTMLElement): void {
+		const today = new Date();
+		const current = this.plugin.settings.displayDateFormat;
+		const opts = DATE_FORMAT_OPTIONS[current];
+		const preview = opts
+			? new Intl.DateTimeFormat(undefined, opts).format(today)
+			: today.toISOString().slice(0, 10);
+
 		new Setting(containerEl)
-			.setName('Date format')
-			.setDesc('Currently supports YYYY-MM-DD format (e.g., 2025-10-24)')
-			.addText(text => text
-				.setValue(this.plugin.settings.dateFormat)
-				.setDisabled(true));
+			.setName('Date display format')
+			.setDesc(`How dates appear in headings. Preview: ${preview}`)
+			.addDropdown(dropdown => {
+				for (const [key, label] of Object.entries(DATE_FORMAT_LABELS)) {
+					dropdown.addOption(key, label);
+				}
+				dropdown
+					.setValue(this.plugin.settings.displayDateFormat)
+					.onChange(async (value) => {
+						this.plugin.settings.displayDateFormat = value as DisplayDateFormat;
+						await this.plugin.saveSettings();
+						this.display(); // refresh preview
+					});
+			});
 	}
 
 	private addOpenOnStartupSetting(containerEl: HTMLElement): void {
