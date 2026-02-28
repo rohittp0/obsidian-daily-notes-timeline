@@ -89,19 +89,28 @@ export class EditorManager {
 		mirror.style.left = '0';
 		wrapper.appendChild(mirror);
 
+		let cachedWidth = 0;
+		let cachedStyles: CSSStyleDeclaration | null = null;
+
 		const syncMirrorStyle = (): void => {
-			const cs = window.getComputedStyle(textarea);
-			mirror.style.fontFamily = cs.fontFamily;
-			mirror.style.fontSize = cs.fontSize;
-			mirror.style.lineHeight = cs.lineHeight;
-			mirror.style.padding = cs.padding;
-			mirror.style.borderWidth = cs.borderWidth;
-			mirror.style.borderStyle = cs.borderStyle;
-			mirror.style.boxSizing = cs.boxSizing;
-			mirror.style.letterSpacing = cs.letterSpacing;
-			mirror.style.wordSpacing = cs.wordSpacing;
-			mirror.style.textIndent = cs.textIndent;
-			mirror.style.width = textarea.offsetWidth + 'px';
+			const width = textarea.offsetWidth;
+			if (cachedStyles && width === cachedWidth) {
+				mirror.style.width = width + 'px';
+				return;
+			}
+			cachedWidth = width;
+			cachedStyles = window.getComputedStyle(textarea);
+			mirror.style.fontFamily = cachedStyles.fontFamily;
+			mirror.style.fontSize = cachedStyles.fontSize;
+			mirror.style.lineHeight = cachedStyles.lineHeight;
+			mirror.style.padding = cachedStyles.padding;
+			mirror.style.borderWidth = cachedStyles.borderWidth;
+			mirror.style.borderStyle = cachedStyles.borderStyle;
+			mirror.style.boxSizing = cachedStyles.boxSizing;
+			mirror.style.letterSpacing = cachedStyles.letterSpacing;
+			mirror.style.wordSpacing = cachedStyles.wordSpacing;
+			mirror.style.textIndent = cachedStyles.textIndent;
+			mirror.style.width = width + 'px';
 		};
 
 		const updateCursor = (): void => {
@@ -120,7 +129,7 @@ export class EditorManager {
 			mirror.appendChild(marker);
 			const mTop = marker.offsetTop;
 			const mLeft = marker.offsetLeft;
-			const cs = window.getComputedStyle(textarea);
+			const cs = cachedStyles || window.getComputedStyle(textarea);
 			const lh = parseFloat(cs.lineHeight) || parseFloat(cs.fontSize) * 1.65;
 			cursor.style.top = mTop + 'px';
 			cursor.style.left = mLeft + 'px';
@@ -130,13 +139,22 @@ export class EditorManager {
 			cursor.style.backgroundColor = '#18BEEC';
 		};
 
-		textarea.addEventListener('keyup', updateCursor);
-		textarea.addEventListener('click', updateCursor);
-		textarea.addEventListener('input', updateCursor);
-		textarea.addEventListener('select', updateCursor);
-		textarea.addEventListener('focus', () => { updateCursor(); });
+		let rafId: number | null = null;
+		const scheduleUpdateCursor = (): void => {
+			if (rafId !== null) return;
+			rafId = requestAnimationFrame(() => {
+				rafId = null;
+				updateCursor();
+			});
+		};
+
+		textarea.addEventListener('keyup', scheduleUpdateCursor);
+		textarea.addEventListener('click', scheduleUpdateCursor);
+		textarea.addEventListener('input', scheduleUpdateCursor);
+		textarea.addEventListener('select', scheduleUpdateCursor);
+		textarea.addEventListener('focus', () => { scheduleUpdateCursor(); });
 		textarea.addEventListener('blur', () => { cursor.style.display = 'none'; });
-		textarea.addEventListener('scroll', updateCursor);
+		textarea.addEventListener('scroll', scheduleUpdateCursor);
 
 		(wrapper as any).textarea = textarea;
 		return wrapper;

@@ -3,6 +3,7 @@ import type { DailyNotesViewerSettings } from '../types';
 
 export class NavigationManager {
 	private editors: Map<string, HTMLTextAreaElement>;
+	private editorsCache: HTMLTextAreaElement[] | null = null;
 	private vimModeManager?: VimModeManager;
 	private settings?: DailyNotesViewerSettings;
 
@@ -29,13 +30,20 @@ export class NavigationManager {
 		});
 	}
 
+	private getEditorsArray(): HTMLTextAreaElement[] {
+		if (!this.editorsCache || this.editorsCache.length !== this.editors.size) {
+			this.editorsCache = Array.from(this.editors.values());
+		}
+		return this.editorsCache;
+	}
+
 	private handleNavigationKey(e: KeyboardEvent, currentEditor: HTMLTextAreaElement): void {
 		// Check if navigation is disabled
 		if (this.settings && !this.settings.navigationEnabled) {
 			return;
 		}
 
-		const editorsArray = Array.from(this.editors.values());
+		const editorsArray = this.getEditorsArray();
 		const currentIndex = editorsArray.indexOf(currentEditor);
 
 		if (currentIndex === -1) return;
@@ -125,51 +133,34 @@ export class NavigationManager {
 		this.scrollCursorIntoView(editor);
 	}
 
-	private isCursorOnFirstLine(editor: HTMLTextAreaElement): boolean {
-		const textBeforeCursor = editor.value.substring(0, editor.selectionStart);
-		return !textBeforeCursor.includes('\n');
-	}
-
-	private isCursorOnLastLine(editor: HTMLTextAreaElement): boolean {
-		const textAfterCursor = editor.value.substring(editor.selectionStart);
-		return !textAfterCursor.includes('\n');
-	}
-
 	private moveCursorVertically(editor: HTMLTextAreaElement, direction: 'up' | 'down'): boolean {
 		const text = editor.value;
 		const pos = editor.selectionStart;
 
-		if (direction === 'up' && this.isCursorOnFirstLine(editor)) {
-			return false;
-		}
-		if (direction === 'down' && this.isCursorOnLastLine(editor)) {
-			return false;
-		}
-
-		// Find current line start and column
-		const textBefore = text.substring(0, pos);
-		const currentLineStart = textBefore.lastIndexOf('\n') + 1;
-		const currentCol = pos - currentLineStart;
-
-		let newPos: number;
-
 		if (direction === 'up') {
-			// Find the previous line
-			const prevLineEnd = currentLineStart - 1; // position of the \n before current line
-			const textBeforePrevLine = text.substring(0, prevLineEnd);
-			const prevLineStart = textBeforePrevLine.lastIndexOf('\n') + 1;
-			const prevLineLength = prevLineEnd - prevLineStart;
-			newPos = prevLineStart + Math.min(currentCol, prevLineLength);
+			// No \n before cursor means we're on line 1
+			const lineStart = text.lastIndexOf('\n', pos - 1);
+			if (lineStart === -1) return false;
+
+			const currentCol = pos - (lineStart + 1);
+			const prevLineStart = text.lastIndexOf('\n', lineStart - 1) + 1;
+			const prevLineLength = lineStart - prevLineStart;
+			const newPos = prevLineStart + Math.min(currentCol, prevLineLength);
+			editor.setSelectionRange(newPos, newPos);
 		} else {
-			// Find the next line
-			const currentLineEnd = text.indexOf('\n', pos);
-			const nextLineStart = currentLineEnd + 1;
+			// No \n after cursor means we're on last line
+			const lineEnd = text.indexOf('\n', pos);
+			if (lineEnd === -1) return false;
+
+			const lineStart = text.lastIndexOf('\n', pos - 1) + 1;
+			const currentCol = pos - lineStart;
+			const nextLineStart = lineEnd + 1;
 			const nextLineEnd = text.indexOf('\n', nextLineStart);
 			const nextLineLength = (nextLineEnd === -1 ? text.length : nextLineEnd) - nextLineStart;
-			newPos = nextLineStart + Math.min(currentCol, nextLineLength);
+			const newPos = nextLineStart + Math.min(currentCol, nextLineLength);
+			editor.setSelectionRange(newPos, newPos);
 		}
 
-		editor.setSelectionRange(newPos, newPos);
 		editor.dispatchEvent(new Event('keyup'));
 		this.scrollCursorIntoView(editor);
 		return true;
@@ -181,16 +172,16 @@ export class NavigationManager {
 			const cursorPos = editor.selectionStart;
 			if (cursorPos === 0) {
 				// Navigating to start of note — show the date heading too
-				noteItem.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+				noteItem.scrollIntoView({ block: 'nearest', behavior: 'auto' });
 				return;
 			}
 		}
 		const wrapper = editor.closest('.daily-note-editor-wrapper');
 		const cursorEl = wrapper?.querySelector('.custom-cursor');
 		if (cursorEl) {
-			cursorEl.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+			cursorEl.scrollIntoView({ block: 'nearest', behavior: 'auto' });
 		} else {
-			editor.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+			editor.scrollIntoView({ block: 'nearest', behavior: 'auto' });
 		}
 	}
 
