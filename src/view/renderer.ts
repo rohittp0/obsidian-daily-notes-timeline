@@ -42,7 +42,7 @@ export class Renderer {
 		if (navigationEnabled) {
 			hintText = 'Navigate: ↑↓';
 			if (vimModeEnabled) {
-				hintText += ' or j/k • Esc: command mode • i/a/o: insert mode';
+				hintText += ' or j/k • Esc: command mode • i/a/o: insert • dd/yy/cc/p/u: edit';
 			}
 			hintText += ' • ';
 		}
