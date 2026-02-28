@@ -176,6 +176,15 @@ export class NavigationManager {
 	}
 
 	private scrollCursorIntoView(editor: HTMLTextAreaElement): void {
+		const noteItem = editor.closest('.daily-note-item');
+		if (noteItem) {
+			const cursorPos = editor.selectionStart;
+			if (cursorPos === 0) {
+				// Navigating to start of note — show the date heading too
+				noteItem.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+				return;
+			}
+		}
 		const wrapper = editor.closest('.daily-note-editor-wrapper');
 		const cursorEl = wrapper?.querySelector('.custom-cursor');
 		if (cursorEl) {
