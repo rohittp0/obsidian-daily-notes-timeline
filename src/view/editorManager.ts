@@ -64,6 +64,7 @@ export class EditorManager {
 	}
 
 	private buildTextarea(content: string): HTMLDivElement {
+		const self = this;
 		const textarea = document.createElement('textarea');
 		textarea.className = 'daily-note-editor';
 		textarea.value = content;
@@ -136,7 +137,14 @@ export class EditorManager {
 			cursor.style.width = '0.6em';
 			cursor.style.height = lh + 'px';
 			cursor.style.display = 'block';
-			cursor.style.backgroundColor = '#18BEEC';
+			const mode = self.vimModeManager?.getCurrentMode();
+			if (mode === 'insert') {
+				cursor.classList.add('vim-insert');
+				cursor.classList.remove('vim-command');
+			} else {
+				cursor.classList.remove('vim-insert');
+				cursor.classList.add('vim-command');
+			}
 		};
 
 		let rafId: number | null = null;

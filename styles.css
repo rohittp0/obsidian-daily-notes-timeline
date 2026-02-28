@@ -214,12 +214,20 @@
 
 .custom-cursor {
 	position: absolute;
-	background-color: #18BEEC;
+	background-color: #18BEEC;  /* fallback if no mode class */
 	opacity: 0.7;
 	pointer-events: none;
 	z-index: 10;
 	animation: cursor-blink 1s step-end infinite;
 	display: none;
+}
+
+.custom-cursor.vim-insert {
+	background-color: #ECA018;  /* amber for insert mode */
+}
+
+.custom-cursor.vim-command {
+	background-color: #18BEEC;  /* cyan for command mode */
 }
 
 @keyframes cursor-blink {
