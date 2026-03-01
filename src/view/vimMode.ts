@@ -47,7 +47,6 @@ class CircularBuffer<T> {
 export class VimModeManager {
 	private currentMode: VimMode = 'command';
 	private editors: Map<string, HTMLTextAreaElement>;
-	private modeIndicators: Map<string, HTMLElement> = new Map();
 	private enabled: boolean;
 
 	// Focused editor tracking for O(1) mode switch updates
@@ -72,7 +71,6 @@ export class VimModeManager {
 
 	/** Clear all state for re-render — prevents stale DOM refs and memory leaks */
 	cleanup(): void {
-		this.modeIndicators.clear();
 		this.undoStacks.clear();
 		this.focusedEditor = null;
 		this.focusedEditorPath = null;
@@ -85,7 +83,6 @@ export class VimModeManager {
 			this.clearPending();
 			this.undoStacks.clear();
 			this.setMode('insert');
-			this.clearAllIndicators();
 		}
 	}
 
@@ -107,20 +104,10 @@ export class VimModeManager {
 		// Only update the focused editor — others sync lazily on focus
 		if (this.focusedEditor) {
 			this.updateEditorState(this.focusedEditor);
-		}
-		if (this.focusedEditorPath) {
-			const indicator = this.modeIndicators.get(this.focusedEditorPath);
-			if (indicator) this.updateIndicator(indicator);
 		} else {
 			// Fallback: no focused editor tracked, update all
 			this.updateAllEditors();
-			this.updateAllIndicators();
 		}
-	}
-
-	registerModeIndicator(editorPath: string, indicator: HTMLElement): void {
-		this.modeIndicators.set(editorPath, indicator);
-		this.updateIndicator(indicator);
 	}
 
 	setupVimModeForEditor(editor: HTMLTextAreaElement): void {
@@ -135,16 +122,11 @@ export class VimModeManager {
 
 		editor.addEventListener('focus', () => {
 			this.focusedEditor = editor;
-			// Resolve path for this editor to track focused indicator
+			// Resolve path for this editor
 			for (const [path, ed] of this.editors) {
 				if (ed === editor) { this.focusedEditorPath = path; break; }
 			}
 			this.updateEditorState(editor);
-			// Sync indicator for this editor (lazy catch-up for stale indicators)
-			if (this.focusedEditorPath) {
-				const indicator = this.modeIndicators.get(this.focusedEditorPath);
-				if (indicator) this.updateIndicator(indicator);
-			}
 		});
 
 		editor.addEventListener('blur', () => {
@@ -159,23 +141,12 @@ export class VimModeManager {
 	private enterPending(op: PendingOperator, editor: HTMLTextAreaElement): void {
 		this.pendingOperator = op;
 		this.pendingEditor = editor;
-		this.updateFocusedIndicator();
 	}
 
 	private clearPending(): void {
 		if (this.pendingOperator !== null) {
 			this.pendingOperator = null;
 			this.pendingEditor = null;
-			this.updateFocusedIndicator();
-		}
-	}
-
-	private updateFocusedIndicator(): void {
-		if (this.focusedEditorPath) {
-			const indicator = this.modeIndicators.get(this.focusedEditorPath);
-			if (indicator) this.updateIndicator(indicator);
-		} else {
-			this.updateAllIndicators();
 		}
 	}
 
@@ -493,45 +464,6 @@ export class VimModeManager {
 
 	private disableEditor(editor: HTMLTextAreaElement): void {
 		editor.setAttribute('readonly', 'true');
-	}
-
-	// --- Indicators ---
-
-	private updateAllIndicators(): void {
-		for (const indicator of this.modeIndicators.values()) {
-			this.updateIndicator(indicator);
-		}
-	}
-
-	private updateIndicator(indicator: HTMLElement): void {
-		if (!this.enabled) {
-			indicator.textContent = '';
-			indicator.removeClass('vim-normal');
-			indicator.removeClass('vim-insert');
-			return;
-		}
-
-		if (this.currentMode === 'command') {
-			if (this.pendingOperator !== null) {
-				indicator.textContent = this.pendingOperator;
-			} else {
-				indicator.textContent = 'NORMAL';
-			}
-			indicator.removeClass('vim-insert');
-			indicator.addClass('vim-normal');
-		} else {
-			indicator.textContent = 'INSERT';
-			indicator.removeClass('vim-normal');
-			indicator.addClass('vim-insert');
-		}
-	}
-
-	private clearAllIndicators(): void {
-		for (const indicator of this.modeIndicators.values()) {
-			indicator.textContent = '';
-			indicator.removeClass('vim-normal');
-			indicator.removeClass('vim-insert');
-		}
 	}
 
 	// --- Cursor movement helpers ---

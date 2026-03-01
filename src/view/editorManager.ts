@@ -97,8 +97,7 @@ export class EditorManager {
 	async createEditor(
 		container: HTMLElement,
 		file: TFile,
-		statusEl: HTMLElement,
-		modeIndicator: HTMLElement
+		statusEl: HTMLElement
 	): Promise<void> {
 		try {
 			const content = await this.app.vault.read(file);
@@ -114,7 +113,6 @@ export class EditorManager {
 			// Setup vim mode for this editor
 			if (this.vimModeManager) {
 				this.vimModeManager.setupVimModeForEditor(textarea);
-				this.vimModeManager.registerModeIndicator(file.path, modeIndicator);
 			}
 		} catch {
 			this.renderError(container);
@@ -320,8 +318,7 @@ export class EditorManager {
 	async createVirtualEditor(
 		container: HTMLElement,
 		expectedPath: string,
-		statusEl: HTMLElement,
-		modeIndicator: HTMLElement
+		statusEl: HTMLElement
 	): Promise<void> {
 		const wrapper = this.buildTextarea('');
 		const textarea = (wrapper as any).textarea as HTMLTextAreaElement;
@@ -335,7 +332,6 @@ export class EditorManager {
 
 		if (this.vimModeManager) {
 			this.vimModeManager.setupVimModeForEditor(textarea);
-			this.vimModeManager.registerModeIndicator(expectedPath, modeIndicator);
 		}
 	}
 

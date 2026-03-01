@@ -85,11 +85,10 @@ export class Renderer {
 		noteHeader.createEl('h3', { text: this.formatDateStr(dateStr), cls: 'daily-note-date' });
 
 		const actionsEl = noteHeader.createDiv('daily-note-actions');
-		const modeIndicator = this.renderModeIndicator(actionsEl);
 		const statusEl = this.renderStatusIndicator(actionsEl);
 
 		const contentDiv = noteEl.createDiv('daily-note-content');
-		await this.editorManager.createVirtualEditor(contentDiv, expectedPath, statusEl, modeIndicator);
+		await this.editorManager.createVirtualEditor(contentDiv, expectedPath, statusEl);
 	}
 
 	async renderAllNotes(container: HTMLElement, files: TFile[]): Promise<void> {
@@ -107,11 +106,10 @@ export class Renderer {
 
 		const actionsEl = noteHeader.createDiv('daily-note-actions');
 		this.renderOpenButton(actionsEl, file);
-		const modeIndicator = this.renderModeIndicator(actionsEl);
 		const statusEl = this.renderStatusIndicator(actionsEl);
 
 		const contentDiv = noteEl.createDiv('daily-note-content');
-		await this.editorManager.createEditor(contentDiv, file, statusEl, modeIndicator);
+		await this.editorManager.createEditor(contentDiv, file, statusEl);
 	}
 
 	private renderNoteDate(container: HTMLElement, file: TFile): void {
@@ -135,13 +133,6 @@ export class Renderer {
 		openBtn.addEventListener('click', () => {
 			const leaf = this.app.workspace.getLeaf('tab');
 			void leaf.openFile(file);
-		});
-	}
-
-	private renderModeIndicator(container: HTMLElement): HTMLElement {
-		return container.createEl('span', {
-			cls: 'vim-mode-indicator',
-			text: ''
 		});
 	}
 
