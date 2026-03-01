@@ -37,6 +37,7 @@ export interface DailyNotesViewerSettings {
 	autoSaveDelay: number;
 	vimModeEnabled: boolean;
 	navigationEnabled: boolean;
+	showKeyboardHints: boolean;
 }
 
 // Default settings
@@ -48,5 +49,6 @@ export const DEFAULT_SETTINGS: DailyNotesViewerSettings = {
 	autoSave: true,
 	autoSaveDelay: DEFAULT_AUTO_SAVE_DELAY,
 	vimModeEnabled: false,
-	navigationEnabled: true
+	navigationEnabled: true,
+	showKeyboardHints: true
 };

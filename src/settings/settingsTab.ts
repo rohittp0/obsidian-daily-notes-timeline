@@ -20,6 +20,7 @@ export class DailyNotesViewerSettingTab extends PluginSettingTab {
 		this.addSortOrderSetting(containerEl);
 		this.addNavigationSetting(containerEl);
 		this.addVimModeSetting(containerEl);
+		this.addShowKeyboardHintsSetting(containerEl);
 		this.addAutoSaveSetting(containerEl);
 		this.addAutoSaveDelaySetting(containerEl);
 	}
@@ -108,6 +109,18 @@ export class DailyNotesViewerSettingTab extends PluginSettingTab {
 				.setValue(this.plugin.settings.vimModeEnabled)
 				.onChange(async (value) => {
 					this.plugin.settings.vimModeEnabled = value;
+					await this.plugin.saveSettings();
+				}));
+	}
+
+	private addShowKeyboardHintsSetting(containerEl: HTMLElement): void {
+		new Setting(containerEl)
+			.setName('Show keyboard hints')
+			.setDesc('Show the keyboard shortcut hints bar below the header')
+			.addToggle(toggle => toggle
+				.setValue(this.plugin.settings.showKeyboardHints)
+				.onChange(async (value) => {
+					this.plugin.settings.showKeyboardHints = value;
 					await this.plugin.saveSettings();
 				}));
 	}

@@ -126,11 +126,13 @@ export class DailyNotesView extends ItemView {
 		);
 
 		// Render keyboard hints
-		this.renderer.renderKeyboardHints(
-			contentEl,
-			this.plugin.settings.vimModeEnabled,
-			this.plugin.settings.navigationEnabled
-		);
+		if (this.plugin.settings.showKeyboardHints) {
+			this.renderer.renderKeyboardHints(
+				contentEl,
+				this.plugin.settings.vimModeEnabled,
+				this.plugin.settings.navigationEnabled
+			);
+		}
 
 		// Render notes
 		const notesContainer = contentEl.createDiv('daily-notes-container');
