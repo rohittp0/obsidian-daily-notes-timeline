@@ -93,6 +93,11 @@ export class VimModeManager {
 		return this.enabled;
 	}
 
+	/** Returns true when vim mode is enabled and a textarea editor is focused */
+	isActive(): boolean {
+		return this.enabled && this.focusedEditor !== null;
+	}
+
 	getCurrentMode(): VimMode {
 		return this.currentMode;
 	}
@@ -126,7 +131,7 @@ export class VimModeManager {
 
 		editor.addEventListener('keydown', (e: KeyboardEvent) => {
 			this.handleEditorKeydown(e, editor);
-		});
+		}, true);
 
 		editor.addEventListener('focus', () => {
 			this.focusedEditor = editor;
@@ -378,6 +383,7 @@ export class VimModeManager {
 		// Step 3: Escape — explicit no-op
 		if (e.key === 'Escape') {
 			e.preventDefault();
+			e.stopPropagation();
 			return;
 		}
 
@@ -460,6 +466,7 @@ export class VimModeManager {
 	private handleInsertModeKey(e: KeyboardEvent, _editor: HTMLTextAreaElement): void {
 		if (e.key === 'Escape') {
 			e.preventDefault();
+			e.stopPropagation();
 			this.setMode('command');
 		}
 	}

@@ -1,4 +1,4 @@
-import { ItemView, TFile, WorkspaceLeaf } from 'obsidian';
+import { ItemView, Scope, TFile, WorkspaceLeaf } from 'obsidian';
 import type DailyNotesViewerPlugin from '../main';
 import { VIEW_TYPE_DAILY_NOTES } from '../types';
 import { FileManager } from './fileManager';
@@ -55,6 +55,15 @@ export class DailyNotesView extends ItemView {
 	}
 
 	async onOpen(): Promise<void> {
+		// Assign a scope so Obsidian's DynamicScope delegates Escape to us
+		// instead of app.scope (which switches tabs). Returning undefined
+		// blocks the parent scope chain but does NOT call preventDefault,
+		// so textarea-level vim listeners still receive the event.
+		this.scope = new Scope(this.app.scope);
+		this.scope.register([], 'Escape', () => {
+			// No-op — just consume the key in the scope chain
+		});
+
 		await this.loadDailyNotes();
 		await this.render();
 		this.navigationManager.setupKeyboardNavigation(this.contentEl);
@@ -75,6 +84,7 @@ export class DailyNotesView extends ItemView {
 	}
 
 	private cleanup(): void {
+		this.scope = null;
 		this.vimModeManager.cleanup();
 		this.navigationManager.destroy();
 		const { contentEl } = this;
