@@ -21,7 +21,7 @@ export class Renderer {
 		return new Intl.DateTimeFormat(undefined, opts).format(date);
 	}
 
-	renderHeader(container: HTMLElement, notesCount: number, onRefresh: () => void, showHeader: boolean = true): void {
+	renderHeader(container: HTMLElement, onRefresh: () => void, showHeader: boolean = true): void {
 		const headerEl = container.createDiv('daily-notes-header');
 		if (showHeader) {
 			headerEl.createEl('h2', { text: 'Daily notes' });
@@ -29,7 +29,6 @@ export class Renderer {
 
 		const controlsEl = headerEl.createDiv('daily-notes-controls');
 		this.renderRefreshButton(controlsEl, onRefresh);
-		this.renderNotesCount(controlsEl, notesCount);
 	}
 
 	private renderRefreshButton(container: HTMLElement, onRefresh: () => void): void {
@@ -37,13 +36,6 @@ export class Renderer {
 		refreshBtn.addEventListener('click', () => {
 			onRefresh();
 			new Notice('Daily notes refreshed');
-		});
-	}
-
-	private renderNotesCount(container: HTMLElement, count: number): void {
-		container.createEl('span', {
-			text: `${count} note${count !== 1 ? 's' : ''}`,
-			cls: 'daily-notes-count'
 		});
 	}
 

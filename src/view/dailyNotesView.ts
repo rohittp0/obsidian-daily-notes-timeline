@@ -110,7 +110,6 @@ export class DailyNotesView extends ItemView {
 		const todayStr = this.fileManager.getTodayDateStr();
 		const todayPath = this.fileManager.getTodayPath(this.plugin.settings);
 		const todayExists = this.dailyNotes.some(f => f.basename === todayStr);
-		const noteCount = this.dailyNotes.length + (todayExists ? 0 : 1);
 
 		// Update managers with latest settings
 		this.vimModeManager.setEnabled(this.plugin.settings.vimModeEnabled);
@@ -121,7 +120,6 @@ export class DailyNotesView extends ItemView {
 		// Render header (with correct count including virtual)
 		this.renderer.renderHeader(
 			contentEl,
-			noteCount,
 			() => void this.handleRefresh(),
 			this.plugin.settings.showHeader
 		);
