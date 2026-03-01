@@ -21,6 +21,7 @@ export class DailyNotesViewerSettingTab extends PluginSettingTab {
 		this.addNavigationSetting(containerEl);
 		this.addVimModeSetting(containerEl);
 		this.addShowKeyboardHintsSetting(containerEl);
+		this.addShowHeaderSetting(containerEl);
 		this.addAutoSaveSetting(containerEl);
 		this.addAutoSaveDelaySetting(containerEl);
 	}
@@ -121,6 +122,18 @@ export class DailyNotesViewerSettingTab extends PluginSettingTab {
 				.setValue(this.plugin.settings.showKeyboardHints)
 				.onChange(async (value) => {
 					this.plugin.settings.showKeyboardHints = value;
+					await this.plugin.saveSettings();
+				}));
+	}
+
+	private addShowHeaderSetting(containerEl: HTMLElement): void {
+		new Setting(containerEl)
+			.setName('Show header')
+			.setDesc('Show the "Daily notes" heading above the controls')
+			.addToggle(toggle => toggle
+				.setValue(this.plugin.settings.showHeader)
+				.onChange(async (value) => {
+					this.plugin.settings.showHeader = value;
 					await this.plugin.saveSettings();
 				}));
 	}

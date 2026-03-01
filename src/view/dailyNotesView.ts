@@ -122,7 +122,8 @@ export class DailyNotesView extends ItemView {
 		this.renderer.renderHeader(
 			contentEl,
 			noteCount,
-			() => void this.handleRefresh()
+			() => void this.handleRefresh(),
+			this.plugin.settings.showHeader
 		);
 
 		// Render keyboard hints

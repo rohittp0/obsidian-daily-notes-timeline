@@ -21,9 +21,11 @@ export class Renderer {
 		return new Intl.DateTimeFormat(undefined, opts).format(date);
 	}
 
-	renderHeader(container: HTMLElement, notesCount: number, onRefresh: () => void): void {
+	renderHeader(container: HTMLElement, notesCount: number, onRefresh: () => void, showHeader: boolean = true): void {
 		const headerEl = container.createDiv('daily-notes-header');
-		headerEl.createEl('h2', { text: 'Daily notes' });
+		if (showHeader) {
+			headerEl.createEl('h2', { text: 'Daily notes' });
+		}
 
 		const controlsEl = headerEl.createDiv('daily-notes-controls');
 		this.renderRefreshButton(controlsEl, onRefresh);
