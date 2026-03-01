@@ -38,6 +38,7 @@ export default class DailyNotesViewerPlugin extends Plugin {
 		this.addCommand({
 			id: 'open-daily-notes-viewer',
 			name: 'Open daily notes viewer',
+			hotkeys: [{ modifiers: ["Mod", "Shift"], key: "K" }],
 			callback: () => this.activateView()
 		});
 
@@ -74,6 +75,7 @@ export default class DailyNotesViewerPlugin extends Plugin {
 		}
 
 		await workspace.revealLeaf(leaf);
+		(leaf.view as DailyNotesView).restoreFocus();
 	}
 
 	async loadSettings(): Promise<void> {

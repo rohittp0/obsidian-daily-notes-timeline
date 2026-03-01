@@ -155,6 +155,10 @@ export class DailyNotesView extends ItemView {
 		this.navigationManager.restoreLastFocus();
 	}
 
+	restoreFocus(): void {
+		this.navigationManager.restoreLastFocus();
+	}
+
 	private async handleRefresh(): Promise<void> {
 		await this.editorManager.saveAllPendingChanges(this.dailyNotes);
 		await this.loadDailyNotes();
