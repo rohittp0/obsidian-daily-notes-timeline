@@ -1,4 +1,4 @@
-import { App, TFile, Notice } from 'obsidian';
+import { App, TFile, Notice, WorkspaceLeaf, MarkdownView } from 'obsidian';
 import { EditorManager } from './editorManager';
 import { type DisplayDateFormat, DATE_FORMAT_OPTIONS } from '../types';
 
@@ -120,8 +120,7 @@ export class Renderer {
 		});
 		link.addEventListener('click', (e) => {
 			e.preventDefault();
-			const leaf = this.app.workspace.getLeaf('tab');
-			void leaf.openFile(file);
+			this.openFileInTab(file);
 		});
 	}
 
@@ -131,9 +130,24 @@ export class Renderer {
 			cls: 'daily-note-btn'
 		});
 		openBtn.addEventListener('click', () => {
-			const leaf = this.app.workspace.getLeaf('tab');
-			void leaf.openFile(file);
+			this.openFileInTab(file);
 		});
+	}
+
+	private openFileInTab(file: TFile): void {
+		const { workspace } = this.app;
+		let existing: WorkspaceLeaf | null = null;
+		workspace.iterateAllLeaves((leaf) => {
+			if (leaf.view instanceof MarkdownView && leaf.view.file?.path === file.path) {
+				existing = leaf;
+			}
+		});
+		if (existing) {
+			workspace.revealLeaf(existing);
+		} else {
+			const leaf = workspace.getLeaf('tab');
+			void leaf.openFile(file);
+		}
 	}
 
 	private renderStatusIndicator(container: HTMLElement): HTMLElement {
