@@ -1,4 +1,4 @@
-import { App, TFile, Notice, WorkspaceLeaf, MarkdownView } from 'obsidian';
+import { App, TFile, WorkspaceLeaf, MarkdownView } from 'obsidian';
 import { EditorManager } from './editorManager';
 import { type DisplayDateFormat, DATE_FORMAT_OPTIONS } from '../types';
 
@@ -21,22 +21,11 @@ export class Renderer {
 		return new Intl.DateTimeFormat(undefined, opts).format(date);
 	}
 
-	renderHeader(container: HTMLElement, onRefresh: () => void, showHeader: boolean = true): void {
+	renderHeader(container: HTMLElement, showHeader: boolean = true): void {
 		const headerEl = container.createDiv('daily-notes-header');
 		if (showHeader) {
 			headerEl.createEl('h2', { text: 'Daily notes' });
 		}
-
-		const controlsEl = headerEl.createDiv('daily-notes-controls');
-		this.renderRefreshButton(controlsEl, onRefresh);
-	}
-
-	private renderRefreshButton(container: HTMLElement, onRefresh: () => void): void {
-		const refreshBtn = container.createEl('button', { text: 'Refresh' });
-		refreshBtn.addEventListener('click', () => {
-			onRefresh();
-			new Notice('Daily notes refreshed');
-		});
 	}
 
 	renderKeyboardHints(container: HTMLElement, vimModeEnabled: boolean, navigationEnabled: boolean): void {

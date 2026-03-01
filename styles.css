@@ -19,25 +19,6 @@
 	color: var(--text-normal);
 }
 
-.daily-notes-controls {
-	display: flex;
-	gap: 10px;
-	align-items: center;
-}
-
-.daily-notes-controls button {
-	padding: 5px 12px;
-	background-color: var(--interactive-normal);
-	color: var(--text-normal);
-	border: 1px solid var(--background-modifier-border);
-	border-radius: 4px;
-	cursor: pointer;
-	font-size: 0.9em;
-}
-
-.daily-notes-controls button:hover {
-	background-color: var(--interactive-hover);
-}
 
 .daily-notes-count {
 	color: var(--text-muted);

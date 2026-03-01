@@ -118,11 +118,7 @@ export class DailyNotesView extends ItemView {
 		this.renderer.displayDateFormat = this.plugin.settings.displayDateFormat;
 
 		// Render header (with correct count including virtual)
-		this.renderer.renderHeader(
-			contentEl,
-			() => void this.handleRefresh(),
-			this.plugin.settings.showHeader
-		);
+		this.renderer.renderHeader(contentEl, this.plugin.settings.showHeader);
 
 		// Render keyboard hints
 		if (this.plugin.settings.showKeyboardHints) {

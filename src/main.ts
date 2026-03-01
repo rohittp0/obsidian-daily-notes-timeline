@@ -45,6 +45,7 @@ export default class DailyNotesViewerPlugin extends Plugin {
 		this.addCommand({
 			id: 'refresh-daily-notes-viewer',
 			name: 'Refresh daily notes viewer',
+			hotkeys: [{ modifiers: ["Mod", "Shift"], key: "R" }],
 			callback: () => this.refreshView()
 		});
 	}
